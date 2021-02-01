@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import time
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
