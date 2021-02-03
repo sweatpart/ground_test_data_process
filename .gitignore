@@ -38,6 +38,10 @@ build/
 *.tar
 *.zip
 
+# Doc #
+#######
+*.pdf
+
 # Logs and databases #
 ######################
 *.log
