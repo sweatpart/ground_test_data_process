@@ -3,7 +3,22 @@ import time
 import rainflow
 import pandas as pd
 import sys
-from collections import deque, defaultdict
+from collections import deque
+import functools
+from threading import Thread, Event
+
+class ActorExit(Exception):
+    pass
+
+def timer(func):
+    @functools.wraps(func)
+    def wapper(*args, **kargs):
+        t0 = time.time()
+        func(*args, **kargs)
+        t1 = time.time()
+        print('Running time of function {} is {}s'.format(func.__name__, (t1-t0)))
+    return wapper
+
 
 def _time_bar(num, max_num,len_of_bar=40, shape='#'):
     """A timebar show the progress. Mostly used for excel importing by far."""
@@ -16,7 +31,7 @@ def _time_bar(num, max_num,len_of_bar=40, shape='#'):
 
 def gen_csvfiles(paths=None):
     for path in paths:
-        with open(file=path, newline='', encoding='gbk') as f:
+        with open(file=path, newline='', encoding='utf-8') as f:
             csv_file = csv.reader(f)
             yield csv_file
 
@@ -27,36 +42,56 @@ def gen_lines(csv_files=None, func=_time_bar):
         csv_file_processed += 1
         for line in csv_file:
             yield line
-        func(num=csv_file_processed, max_num=len(csv_files))
-
-def gen_rainflow(lines):
-    pass
 
 class Worker():
     def __init__(self):
         self._csv_to_process = deque()
         self._result = []
     
-    def load(self, paths):
+    #定义一个后台服务线程
+    def start(self):
+        self._terminated = Event()
+        t = Thread(target=self._bootstrap)
+        t.daemon = True
+        t.start()
+    
+    def _bootstrap(self):
+        try:
+            self.run()
+        except ActorExit:
+            pass
+        finally:
+            self._terminated.set()
+    
+    #关闭worker
+    def close(self):
+        self.send(ActorExit)
+    
+    def send(self, paths):
         self._csv_to_process.append(paths)
 
-    def _process(self, paths):
-        csv_files = gen_csvfiles(paths=paths)
-        lines = gen_lines(csv_files=csv_files)
-        self._result.append(gen_rainflow(lines))
+    def _process(self, series):
+        # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
+        counts = rainflow.count_cycles(series=series, ndigits=0)
+        self._result.append(counts)
     
     def run(self):
         while True:
             if self._csv_to_process:
-                paths = self._csv_to_process.popleft()
-                self._process(paths)
+                series = self._csv_to_process.popleft()
+                self._process(series)
             time.sleep(0.1)
 
+
+#csv_files = gen_csvfiles(paths=paths)
+#lines = gen_lines(csv_files=csv_files)
+@timer
 def main():
-    pass
+    worker = Worker()
+    worker.start()
+    worker.send([1,2,3,5,7,1,12,3,2])
+    time.sleep(3)
+    print(worker._result)
 
 if __name__ == "__main__":
-    t0 = time.time()
     main()
-    t1 = time.time()
-    print('Running time is {}s'.format((t1-t0)))
