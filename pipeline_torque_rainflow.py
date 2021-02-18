@@ -4,14 +4,14 @@ import rainflow
 import pandas as pd
 import sys
 from collections import deque
-import functools
+from functools import wraps, partial
 from threading import Thread, Event
 
 class ActorExit(Exception):
     pass
 
 def timer(func):
-    @functools.wraps(func)
+    @wraps(func)
     def wapper(*args, **kargs):
         t0 = time.time()
         func(*args, **kargs)
@@ -32,21 +32,21 @@ def _time_bar(num, max_num,len_of_bar=40, shape='#'):
 def gen_csvfiles(paths=None):
     for path in paths:
         with open(file=path, newline='', encoding='utf-8') as f:
-            csv_file = csv.reader(f)
+            csv_file = csv.DictReader(f) # 每行作为一个字典，字典的键来自每个csv的第一行
             yield csv_file
 
 def gen_lines(csv_files=None, func=_time_bar):
     csv_file_processed = 0
+    key = 0
     for csv_file in csv_files:
-        _ = next(csv_file)
         csv_file_processed += 1
         for line in csv_file:
-            yield line
+            yield int(line[key])
 
 class Worker():
     def __init__(self):
         self._csv_to_process = deque()
-        self._result = []
+        self._results = []
     
     #定义一个后台服务线程
     def start(self):
@@ -72,8 +72,8 @@ class Worker():
 
     def _process(self, series):
         # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
-        counts = rainflow.count_cycles(series=series, ndigits=0)
-        self._result.append(counts)
+        result = rainflow.count_cycles(series=series, ndigits=1)
+        self._results.append(result)
     
     def run(self):
         while True:
@@ -82,16 +82,15 @@ class Worker():
                 self._process(series)
             time.sleep(0.1)
 
-
-#csv_files = gen_csvfiles(paths=paths)
-#lines = gen_lines(csv_files=csv_files)
 @timer
 def main():
     worker = Worker()
     worker.start()
-    worker.send([1,2,3,5,7,1,12,3,2])
-    time.sleep(3)
-    print(worker._result)
+    paths = ['/Users/sunlei/Documents/Github/ground_test_data_process/tests/testinput.csv']
+    csv_files = gen_csvfiles(paths=paths)
+    lines = gen_lines(csv_files=csv_files)
+    worker.send(lines)
+    time.sleep(5)
 
 if __name__ == "__main__":
     main()
