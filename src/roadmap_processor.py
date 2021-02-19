@@ -4,30 +4,12 @@ import rainflow
 import pandas as pd
 import sys
 from collections import deque
-from functools import wraps, partial
+from functools import partial
 from threading import Thread, Event
+from tools import timer
 
 class ActorExit(Exception):
     pass
-
-def timer(func):
-    @wraps(func)
-    def wapper(*args, **kargs):
-        t0 = time.time()
-        func(*args, **kargs)
-        t1 = time.time()
-        print('Running time of function {} is {}s'.format(func.__name__, (t1-t0)))
-    return wapper
-
-
-def _time_bar(num, max_num,len_of_bar=40, shape='#'):
-    """A timebar show the progress. Mostly used for excel importing by far."""
-    rate = float(num) / float(max_num)
-    rate_percent = int(rate * 100)   
-    rate_num = int(rate * len_of_bar)    
-    sys.stdout.write('\r{}/{} complete - {}%| '.format(num, max_num, rate_percent) + shape*rate_num + ' '*(len_of_bar - rate_num) + ' |' + '.'*int(num%10) + ' '*10)   
-    sys.stdout.flush() 
-    return True
 
 def gen_csvfiles(paths=None):
     for path in paths:
@@ -35,7 +17,7 @@ def gen_csvfiles(paths=None):
             csv_file = csv.DictReader(f) # 每行作为一个字典，字典的键来自每个csv的第一行
             yield csv_file
 
-def gen_lines(csv_files=None, func=_time_bar):
+def gen_lines(csv_files=None):
     csv_file_processed = 0
     key = 0
     for csv_file in csv_files:
