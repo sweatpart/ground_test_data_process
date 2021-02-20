@@ -143,6 +143,7 @@ class FileMode(BaseMode):
     def draw_input(self):
         user_input = input('{}File to select: '.format(self.error_information))
         self._message_box.append(user_input)
+
     def user_input_handler(self):
         user_input = self._message_box.popleft()
 
@@ -174,7 +175,7 @@ class FileMode(BaseMode):
 
 class Context():
     def __init__(self, state):
-        path = '/Users/sunlei/'
+        path = '/Users/sunlei/Documents/Github/ground_test_data_process/tests/'
         config = {
             'number': 1,
             'hide': 1
@@ -203,6 +204,5 @@ class Context():
             
 if __name__ == '__main__':
     test_fileexplorer = Context(PathMode)
-    
     files_to_process = test_fileexplorer.run()
     print(files_to_process)
