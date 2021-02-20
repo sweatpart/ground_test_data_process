@@ -4,6 +4,12 @@ import sys
 
 config_command = namedtuple('config_command', 'item value')
 
+class BrowserExit(Exception):
+    pass
+
+class FilesSelected(Exception):
+    pass
+
 class BaseMode():
     def __init__(self, path, config):
         self.path_head = path
@@ -11,12 +17,13 @@ class BaseMode():
 
         self._message_box = deque()
         self.error_information = ''
+        self.files_to_process = []
 
     def __repr__(self):
         return type(self).__name__
     
     def draw_banner(self):
-        sys.stdout.write('{}  {}  {}'.format('PathMode(:p)', 'FileMode(:f)', 'BaseMode(:q)\n'))
+        sys.stdout.write('{}  {}  {}  {}\n'.format('PathMode(:p)', 'FileMode(:f)', 'NormalMode(:n)', 'Quit(:q)'))
         sys.stdout.flush()
 
     def draw_pwd(self):
@@ -42,8 +49,7 @@ class BaseMode():
         print('State: {}'.format(self))
     
     def draw_input(self):
-        user_input = input('{}User command: '.format(self.error_information))
-        self._message_box.append(user_input)
+        pass
 
     def draw(self):
         os.system('clear')
@@ -54,6 +60,11 @@ class BaseMode():
         self.draw_state()
         self.draw_input()
 
+class NormalMode(BaseMode):
+    def draw_input(self):
+        user_input = input('{}User command: '.format(self.error_information))
+        self._message_box.append(user_input)
+    
     def user_input_handler(self):
         user_input = self._message_box.popleft()
         command_dict = {
@@ -68,6 +79,15 @@ class BaseMode():
         elif user_input == ':f':
             return FileMode(self.path_head, self.config)
 
+        elif user_input == ':n':
+            return NormalMode(self.path_head, self.config)
+
+        elif user_input == ':q':
+            raise BrowserExit
+
+        elif user_input == ':s':
+            raise FilesSelected
+        
         elif user_input in command_dict.keys():
             command = command_dict[user_input]
             self.config[command.item] = command.value
@@ -84,8 +104,20 @@ class PathMode(BaseMode):
 
     def user_input_handler(self):
         user_input = self._message_box.pop()
-        if user_input == ':q':
-            return BaseMode(self.path_head, self.config)
+        if user_input == ':p':
+            return PathMode(self.path_head, self.config)
+
+        elif user_input == ':f':
+            return FileMode(self.path_head, self.config)
+
+        elif user_input == ':n':
+            return NormalMode(self.path_head, self.config)
+
+        elif user_input == ':q':
+            raise BrowserExit
+
+        elif user_input == ':s':
+            raise FilesSelected
 
         elif user_input == '..':
             self.error_information = ''
@@ -103,13 +135,42 @@ class PathMode(BaseMode):
                 self.path_head += '/'
 
         else:
-            self.error_information = '[Error: input is not dir.]'
+            self.error_information = '[Error: input is not a dir.]'
 
         return self
 
 class FileMode(BaseMode):
+    def draw_input(self):
+        user_input = input('{}File to select: '.format(self.error_information))
+        self._message_box.append(user_input)
     def user_input_handler(self):
-        pass
+        user_input = self._message_box.popleft()
+
+        if user_input == ':p':
+            return PathMode(self.path_head, self.config)
+
+        elif user_input == ':f':
+            return FileMode(self.path_head, self.config)
+
+        elif user_input == ':n':
+            return NormalMode(self.path_head, self.config)
+
+        elif user_input == ':q':
+            raise BrowserExit
+
+        elif user_input == ':s':
+            raise FilesSelected
+
+        elif os.path.isfile(self.path_head + user_input):
+            self.error_information = ''
+            self.files_to_process.append(self.path_head + user_input)
+
+        else:
+            self.error_information = '[Error: input is not a file.]'
+
+        return self
+            
+
 
 class Context():
     def __init__(self, state):
@@ -127,12 +188,21 @@ class Context():
         self._state = state
         
     def run(self):
-        self._state.draw()
-        self.set_state(self._state.user_input_handler())
-
-
-
+        while True:
+            try:
+                self._state.draw()
+                self.set_state(self._state.user_input_handler())
+            except BrowserExit:
+                print('File browser eixt successfully.')
+                return True
+            except FilesSelected:
+                print('Files selected successfully.')
+                return self._state.files_to_process
+            else:
+                pass
+            
 if __name__ == '__main__':
     test_fileexplorer = Context(PathMode)
-    while True:
-        test_fileexplorer.run()
+    
+    files_to_process = test_fileexplorer.run()
+    print(files_to_process)
