@@ -4,13 +4,18 @@ import sys
 
 config_command = namedtuple('config_command', 'item value')
 
-class BrowserExit(Exception):
+class FileError(Exception):
     pass
 
-class FilesSelected(Exception):
+class BrowserExit(FileError):
     pass
 
-class BaseMode():
+class FilesSelected(FileError):
+    pass
+
+# TODO 太多重复代码，是否有方案优化
+class BaseMode(object):
+
     def __init__(self, path, config):
         self.path_head = path
         self.config = config
@@ -18,6 +23,7 @@ class BaseMode():
         self._message_box = deque()
         self.error_information = ''
         self.files_to_process = []
+        self.input_prompt = ''
 
     def __repr__(self):
         return type(self).__name__
@@ -45,11 +51,12 @@ class BaseMode():
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-    def draw_state(self):
+    def draw_status(self):
         print('State: {}'.format(self))
     
     def draw_input(self):
-        pass
+        user_input = input('{}{}: '.format(self.error_information, self.input_prompt))
+        self._message_box.append(user_input)
 
     def draw(self):
         os.system('clear')
@@ -57,13 +64,15 @@ class BaseMode():
         self.draw_banner()
         self.draw_pwd()
         self.draw_main()
-        self.draw_state()
+        self.draw_status()
         self.draw_input()
 
+
 class NormalMode(BaseMode):
-    def draw_input(self):
-        user_input = input('{}User command: '.format(self.error_information))
-        self._message_box.append(user_input)
+
+    def __init__(self, path, config):
+        BaseMode.__init__(self, path, config)
+        self.input_prompt = 'User command: '
     
     def user_input_handler(self):
         user_input = self._message_box.popleft()
@@ -84,9 +93,6 @@ class NormalMode(BaseMode):
 
         elif user_input == ':q':
             raise BrowserExit
-
-        elif user_input == ':s':
-            raise FilesSelected
         
         elif user_input in command_dict.keys():
             command = command_dict[user_input]
@@ -97,10 +103,12 @@ class NormalMode(BaseMode):
         
         return self
 
+
 class PathMode(BaseMode):
-    def draw_input(self):
-        user_input = input('{}Path to jump: '.format(self.error_information))
-        self._message_box.append(user_input)
+
+    def __init__(self, path, config):
+        BaseMode.__init__(self, path, config)
+        self.input_prompt = 'Path to jump:'
 
     def user_input_handler(self):
         user_input = self._message_box.pop()
@@ -116,14 +124,10 @@ class PathMode(BaseMode):
         elif user_input == ':q':
             raise BrowserExit
 
-        elif user_input == ':s':
-            raise FilesSelected
-
         elif user_input == '..':
             self.error_information = ''
             temp = self.path_head.split('/')
-            for i in range(2): temp.pop()
-            temp.append('')
+            temp.pop(-2)  # 删掉当前目录名
             self.path_head = '/'.join(temp)
 
         elif os.path.isdir(self.path_head + user_input):
@@ -134,15 +138,20 @@ class PathMode(BaseMode):
             else: 
                 self.path_head += '/'
 
+        elif user_input.startswith(':'):
+            self.error_information = '[Error: invalid command.]'
+
         else:
             self.error_information = '[Error: input is not a dir.]'
 
         return self
 
+
 class FileMode(BaseMode):
-    def draw_input(self):
-        user_input = input('{}File to select: '.format(self.error_information))
-        self._message_box.append(user_input)
+
+    def __init__(self, path, config):
+        BaseMode.__init__(self, path, config)
+        self.input_prompt = 'File to select:'   
 
     def user_input_handler(self):
         user_input = self._message_box.popleft()
@@ -160,7 +169,10 @@ class FileMode(BaseMode):
             raise BrowserExit
 
         elif user_input == ':s':
-            raise FilesSelected
+            if self.files_to_process:
+                raise FilesSelected
+            else:
+                self.error_information = '[Error: No file selected.]'
 
         elif os.path.isfile(self.path_head + user_input):
             self.error_information = ''
@@ -172,15 +184,15 @@ class FileMode(BaseMode):
         return self
             
 
+class BrowserContext(object):
 
-class Context():
-    def __init__(self, state):
+    def __init__(self, init_state):
         path = '/Users/sunlei/Documents/Github/ground_test_data_process/tests/'
         config = {
-            'number': 1,
-            'hide': 1
+            'number': 1,  # 显示行号
+            'hide': 1  # 显示隐藏文件
         }
-        self._state = state(path, config)
+        self._state = init_state(path, config)
 
     def get_state(self):
         pass
@@ -201,8 +213,13 @@ class Context():
                 return self._state.files_to_process
             else:
                 pass
-            
-if __name__ == '__main__':
-    test_fileexplorer = Context(PathMode)
+
+
+def main():
+    test_fileexplorer = BrowserContext(PathMode)
     files_to_process = test_fileexplorer.run()
     print(files_to_process)
+           
+if __name__ == '__main__':
+    main()
+    
