@@ -28,10 +28,19 @@ class MainContextExit(MainContextError):
     pass
 
 
+class Command(object):
+    
+    def __init__(self, parameters, solver):
+        self.comand_info = (parameters, solver)
+
+    def sendto(self,load_balancer):
+        load_balancer.send(self.comand_info)
+
 class MainContext(object):
 
-    def __init__(self):
+    def __init__(self, load_balancer):
         self._message_box = deque()
+        self._command_list = deque()
         self.result_q = Queue()
         self.error_information = ''
 
@@ -40,14 +49,17 @@ class MainContext(object):
         self.solver_selector = async_solver_selector()
         next(self.solver_selector)
         
-        self.processor = Processor()
+        self.load_balancer = load_balancer
     
     def draw_title(self):
         pass
 
     def draw_instructions(self):
         pass
-
+    
+    def draw_commands(self):
+        pass
+    
     def draw_status(self):
         if not self.result_q.empty():
             result = self.result_q.get()
@@ -64,16 +76,19 @@ class MainContext(object):
 
     def user_input_handler(self):
         user_input = self._message_box.popleft()
-        if user_input == ':add':
+        if user_input == ':file':
             self.files_to_process = self.file_browser.send('add')
         elif user_input == ':cancel':
-            self.processor.close()
+            self.load_balancer.close()
         elif user_input == ':solver':
             self.solver = self.solver_selector.send('add')
+        elif user_input == ':add':
+            self._command_list.append(Command(self.files_to_process, self.solver))
         elif user_input == ':start':
-            if self.files_to_process and self.solver:
-                self.processor.start(self.result_q)
-                self.processor.send((self.files_to_process, self.solver))
+            if self._command_list:
+                self.load_balancer.start(self.result_q)
+                for command in self._command_list:
+                    command.sendto(self.load_balancer)
         elif user_input == ':quit':
             raise MainContextExit
 
@@ -86,7 +101,8 @@ class MainContext(object):
                 print('MainContext close successfully.')
 
 def main():
-    test_maincontext = MainContext()
+    load_balancer = Processor()
+    test_maincontext = MainContext(load_balancer)
     test_maincontext.run()
 
 if __name__ == '__main__':
