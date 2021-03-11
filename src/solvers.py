@@ -1,6 +1,6 @@
 import csv
 
-import rainflow
+from src.rainflow import Rainflow
 
 class BaseSolver(object):
 
@@ -23,24 +23,26 @@ class BaseSolver(object):
 class RainflowSolver(BaseSolver):
 
     def solver_method(self, paths):
-        csv_files = self.gen_csvfiles(paths=paths)
-        lines = self.gen_lines(csv_files=csv_files)
-        result = rainflow.count_cycles(series=lines, ndigits=1)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
+        csv_files_a = self.gen_csvfiles(paths=paths)
+        csv_files_b = self.gen_csvfiles(paths=paths)
+        lines_a = self.gen_lines(csv_files=csv_files_a, header='Torque_RL')
+        lines_b = self.gen_lines(csv_files=csv_files_b, header='JounceAngle_RL')
+        rf = Rainflow(series=lines_a, parameters=[('b', lines_b)])
+        result = rf.count_cycles(ndigits=1)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
         return result
 
     def gen_csvfiles(self, paths=None):
         for path in paths:
-            with open(file=path, newline='', encoding='utf-8') as f:
+            with open(file=path, newline='', encoding='gb18030') as f:
                 csv_file = csv.DictReader(f) # 每行作为一个字典，字典的键来自每个csv的第一行
                 yield csv_file
 
-    def gen_lines(self, csv_files=None):
+    def gen_lines(self, csv_files=None, header=None):
         csv_file_processed = 0
-        key = 'a'
         for csv_file in csv_files:
             csv_file_processed += 1
             for line in csv_file:
-                yield int(line[key])
+                yield int(line[header])
 
 
 class TestSolver(BaseSolver):

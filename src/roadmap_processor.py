@@ -68,7 +68,7 @@ def main():
     result_q = Queue()
     worker = Processor()
     worker.start(result_q)
-    paths = ['/Users/sunlei/Documents/Github/ground_test_data_process/tests/testinput.csv']
+    paths = ['/Users/sunlei/Documents/Github/ground_test_data_process/tests/1.csv']
     worker.send((paths, RainflowSolver))
     time.sleep(3)
     result= result_q.get()
