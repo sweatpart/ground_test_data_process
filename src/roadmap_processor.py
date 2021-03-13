@@ -4,6 +4,7 @@ from queue import Queue
 from collections import deque
 from functools import partial
 from threading import Thread, Event
+import json
 
 
 from src.tools import timer
@@ -68,11 +69,14 @@ def main():
     result_q = Queue()
     worker = Processor()
     worker.start(result_q)
-    paths = ['/Users/sunlei/Documents/Github/ground_test_data_process/tests/1.csv']
+    dir_name = '/Users/sunlei/Documents/Github/ground_test_data_process/tests/2/csv/'
+    paths = ['{}{}.csv'.format(dir_name, i) for i in range(1, 29)]
     worker.send((paths, RainflowSolver))
-    time.sleep(3)
+    #time.sleep(4)
     result= result_q.get()
     print(result)
+    with open('/Users/sunlei/Documents/Github/ground_test_data_process/tests/2.json', 'w') as j:
+        json.dump(result, j)
 
 
 if __name__ == "__main__":

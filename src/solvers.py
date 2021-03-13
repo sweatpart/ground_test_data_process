@@ -23,26 +23,38 @@ class BaseSolver(object):
 class RainflowSolver(BaseSolver):
 
     def solver_method(self, paths):
-        csv_files_a = self.gen_csvfiles(paths=paths)
-        csv_files_b = self.gen_csvfiles(paths=paths)
-        lines_a = self.gen_lines(csv_files=csv_files_a, header='Torque_RL')
-        lines_b = self.gen_lines(csv_files=csv_files_b, header='JounceAngle_RL')
-        rf = Rainflow(series=lines_a, parameters=[('b', lines_b)])
-        result = rf.count_cycles(ndigits=1)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
+        csv_files_torque = self.gen_csvfiles(paths=paths)
+        csv_files_angal = self.gen_csvfiles(paths=paths)
+        lines_torque = self.gen_lines(csv_files=csv_files_torque, header='Torque_RL[Nm]')
+        lines_angal = self.gen_lines(csv_files=csv_files_angal, header='JounceAngle_RL[deg]')
+        digits_torque = self.gen_digits(lines_torque)
+        digits_angal = self.gen_digits(lines_angal)
+        rf = Rainflow(series=digits_torque, parameters=[('angal', digits_angal)])
+        #rf = Rainflow(series=digits_torque)
+        result = rf.count_cycles(ndigits=-1)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
         return result
 
-    def gen_csvfiles(self, paths=None):
+    def gen_csvfiles(self, paths):
+        self.total_files = len(paths)
         for path in paths:
             with open(file=path, newline='', encoding='gb18030') as f:
                 csv_file = csv.DictReader(f) # 每行作为一个字典，字典的键来自每个csv的第一行
                 yield csv_file
 
-    def gen_lines(self, csv_files=None, header=None):
+    def gen_lines(self, csv_files, header):
+        temp = None
         csv_file_processed = 0
         for csv_file in csv_files:
-            csv_file_processed += 1
             for line in csv_file:
-                yield int(line[header])
+                if line[header]:
+                    temp = line[header]
+                yield temp
+            csv_file_processed += 1
+            print('{} / {} files processed.'.format(csv_file_processed, self.total_files))
+
+    def gen_digits(self, lines):
+        for line in lines:
+            yield float(line)
 
 
 class TestSolver(BaseSolver):

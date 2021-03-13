@@ -36,7 +36,17 @@ def cal_parameter(async_gens, method):
         return wapper
 
     return decorate
-    
+def test(async_gens, method):
+    def wapper(start, stop):
+        result = []
+        for async_gen in async_gens.values():
+            data = async_gen.send((start, stop))
+            result.append(method(data))
+        return result
+    return wapper
+            
+
+
 
 class Rainflow(object):
 
@@ -48,6 +58,7 @@ class Rainflow(object):
             parameters (list, optional): 可选的其他计算参数列表，列表元素为（‘header’, header对应的参数生成器）. Defaults to None.
         """
         self.series = iter(series)
+        self.parameters = None
         
         if parameters:  # 当有其他参数输入，参与运算
             self.parameters = parameters
@@ -102,9 +113,9 @@ class Rainflow(object):
 
         x_last, x = next(series), next(series)
         d_last = (x - x_last)
-
         yield 0, x_last
-        for index, x_next in enumerate(series, start=1):
+
+        for index, x_next in enumerate(series, start=1):    
             if x_next == x:
                 continue
             d_next = x_next - x
@@ -112,6 +123,7 @@ class Rainflow(object):
                 yield index, x
             x_last, x = x, x_next
             d_last = d_next
+        
         yield index + 1, x_next
 
 
@@ -130,7 +142,7 @@ class Rainflow(object):
         """
         points = deque()
         
-        @cal_parameter(self.gen_parameter, lambda x: sum(x)//len(x))  # 附加计算区间角度平均值
+        #@cal_parameter(self.gen_parameter, lambda x: sum(x)//len(x))  # 附加计算区间角度平均值
         def format_output(point1, point2, count):
             i1, x1 = point1
             i2, x2 = point2
@@ -205,8 +217,8 @@ class Rainflow(object):
             )
         counts = defaultdict(dict)
         cycles = (
-            (rng, count, angal)
-            for rng, mean, count, i_start, i_end, angal in self.extract_cycles(self.series)
+            [rng, count] + test(self.gen_parameter, lambda x: sum(x)//len(x))(i_start, i_end) if self.parameters else [rng, count]
+            for rng, mean, count, i_start, i_end in self.extract_cycles(self.series)
         )
         if nbins is not None:
             binsize = (max(self.series) - min(self.series)) / nbins
