@@ -66,16 +66,19 @@ class Processor(object):
 
 @timer
 def main():
+
+
+    
     result_q = Queue()
     worker = Processor()
     worker.start(result_q)
-    dir_name = '/Users/sunlei/Documents/Github/ground_test_data_process/tests/2/csv/'
-    paths = ['{}{}.csv'.format(dir_name, i) for i in range(1, 29)]
+    test_dir = '/root/ground_test_data_process/tests/'
+    paths = ['{}{}.csv'.format(test_dir, i) for i in range(1, 2)]
     worker.send((paths, RainflowSolver))
     #time.sleep(4)
     result= result_q.get()
     print(result)
-    with open('/Users/sunlei/Documents/Github/ground_test_data_process/tests/2.json', 'w') as j:
+    with open('/root/ground_test_data_process/tests/test.json', 'w') as j:
         json.dump(result, j)
 
 

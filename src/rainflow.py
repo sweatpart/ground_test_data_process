@@ -8,12 +8,12 @@ from collections import deque, defaultdict
 import math
 from functools import wraps
 
-try:
+""" try:
     from importlib import metadata as _importlib_metadata
 except ImportError:
     import importlib_metadata as _importlib_metadata
 
-__version__ = _importlib_metadata.version("rainflow")
+__version__ = _importlib_metadata.version("rainflow") """
 
 
 
@@ -86,7 +86,7 @@ class Rainflow(object):
             while index <= stop:
                 temp = next(series)
                 if temp is not None:  # 数据行非空值
-                    checkbook[index] = temp
+                    checkbook[index] = abs(temp)
                 index += 1
             for i in range(start, stop+1):
                 if i in checkbook.keys():
