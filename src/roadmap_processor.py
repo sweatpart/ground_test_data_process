@@ -66,14 +66,12 @@ class Processor(object):
 
 @timer
 def main():
-
-
-    
+   
     result_q = Queue()
     worker = Processor()
     worker.start(result_q)
-    test_dir = '/root/ground_test_data_process/tests/'
-    paths = ['{}{}.csv'.format(test_dir, i) for i in range(1, 2)]
+    test_file = '/root/ground_test_data_process/tests/testinput.csv'
+    paths = [test_file]
     worker.send((paths, RainflowSolver))
     #time.sleep(4)
     result= result_q.get()

@@ -16,38 +16,6 @@ except ImportError:
 __version__ = _importlib_metadata.version("rainflow") """
 
 
-
-def cal_parameter(async_gens, method):
-
-    def decorate(func):
-
-        @wraps(func)
-        def wapper(point1, point2, count):
-            result = func(point1, point2, count)  #计算原函数所要实现的功能
-            print(point1)
-            print(point2)
-            print(count)
-            for async_gen in async_gens.values():
-                data = async_gen.send((point1[0], point2[0]))
-                result.append(method(data))  # 追加可选参数的区间平均值
-
-            return result
-
-        return wapper
-
-    return decorate
-def test(async_gens, method):
-    def wapper(start, stop):
-        result = []
-        for async_gen in async_gens.values():
-            data = async_gen.send((start, stop))
-            result.append(method(data))
-        return result
-    return wapper
-            
-
-
-
 class Rainflow(object):
 
     def __init__(self, series, parameters=None):
@@ -55,17 +23,17 @@ class Rainflow(object):
 
         Args:
             series (iterable item): 用于计算雨流循环计数的可迭代对象，计算路谱时为扭矩元素生成器。
-            parameters (list, optional): 可选的其他计算参数列表，列表元素为（‘header’, header对应的参数生成器）. Defaults to None.
+            parameters (list, optional): 可选的其他计算参数列表，列表元素为（‘header’, header对应的数据行生成器）. Defaults to None.
         """
         self.series = iter(series)
         self.parameters = None
         
         if parameters:  # 当有其他参数输入，参与运算
             self.parameters = parameters
-            self.gen_parameter = dict()
+            self.gen_parameters = dict()
             for header, parameter_series in self.parameters:
-                self.gen_parameter[header] = self._async_parameter(parameter_series)
-                next(self.gen_parameter[header])  # 预激角度等参数计算协程
+                self.gen_parameters[header] = self._async_parameter(parameter_series)
+                next(self.gen_parameters[header])  # 预激角度等参数计算协程
     
     def _async_parameter(self, series):
         """用于提取可选参数数据区间内值的协程
@@ -142,7 +110,6 @@ class Rainflow(object):
         """
         points = deque()
         
-        #@cal_parameter(self.gen_parameter, lambda x: sum(x)//len(x))  # 附加计算区间角度平均值
         def format_output(point1, point2, count):
             i1, x1 = point1
             i2, x2 = point2
@@ -211,15 +178,31 @@ class Rainflow(object):
             else:
                 return lambda x: round(x, ndigits)
 
+        def _cal_parameter(gen_parameters, process_method, start, stop):
+            result = []
+            for gen_parameter in gen_parameters.values():
+                data = gen_parameter.send((start, stop))  # 获得区间内参数值列表
+                result.append(process_method(data))
+            return result
+
+        def rec_dd():
+            return defaultdict(rec_dd)  # 用于循环建立defaultdict
+
+        counts = rec_dd()
+        #counts = defaultdict(dict) if self.parameters else defaultdict(float)  # 根据需计算参数个数定义
+            
         if sum(value is not None for value in (ndigits, nbins, binsize)) > 1:
             raise ValueError(
                 "Arguments ndigits, nbins and binsize are mutually exclusive"
             )
-        counts = defaultdict(dict)
+        
+        parameter_process_method = lambda x: sum(x)//len(x)
+
         cycles = (
-            [rng, count] + test(self.gen_parameter, lambda x: sum(x)//len(x))(i_start, i_end) if self.parameters else [rng, count]
+            [rng, count] + [_cal_parameter(self.gen_parameters, parameter_process_method, i_start, i_end)] if self.parameters else [rng, count]
             for rng, mean, count, i_start, i_end in self.extract_cycles(self.series)
-        )
+        )  # 如果parameters有可选参数需要计算，则进行追加
+
         if nbins is not None:
             binsize = (max(self.series) - min(self.series)) / nbins
 
@@ -235,14 +218,30 @@ class Rainflow(object):
 
         elif ndigits is not None:
             round_ = _get_round_function(ndigits)
-            for rng, count, angal in cycles:
-                if angal in counts[round_(rng)]:
-                    counts[round_(rng)][angal] += count
-                else:
-                    counts[round_(rng)][angal] = count
-               
+            if self.parameters:
+                for rng, count, parameters in cycles:
+                    print(rng)
+                    sub_dict = counts[round_(rng)]
+                    while parameters:
+                        if len(parameters) == 1:
+                            temp = parameters.pop()
+                            if sub_dict[temp]:
+                                sub_dict[temp] += count
+                            else:
+                                sub_dict[temp] = count
+                        else:
+                            sub_dict = sub_dict[parameters.pop()]
+                    print(counts)
+            else:
+                for rng, count in cycles:
+                    if counts[round_(rng)]:
+                        counts[round_(rng)] += count
+                    else:
+                        counts[round_(rng)] = count
+       
         else:
             for rng, count in cycles:
                 counts[rng] += count
-
-        return sorted(counts.items())
+        print(counts)
+        return counts
+        #return sorted(counts.items())

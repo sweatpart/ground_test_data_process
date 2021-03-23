@@ -25,20 +25,23 @@ class RainflowSolver(BaseSolver):
     def solver_method(self, paths):
         csv_files_torque = self.gen_csvfiles(paths=paths)
         csv_files_angal = self.gen_csvfiles(paths=paths)
-        lines_torque = self.gen_lines(csv_files=csv_files_torque, header='Torque_RL[Nm]')
-        lines_angal = self.gen_lines(csv_files=csv_files_angal, header='JounceAngle_RL[deg]')
+        csv_files_c = self.gen_csvfiles(paths=paths)
+        lines_torque = self.gen_lines(csv_files=csv_files_torque, header='a')
+        lines_angal = self.gen_lines(csv_files=csv_files_angal, header='b')
+        lines_c = self.gen_lines(csv_files=csv_files_c, header='c')
         digits_torque = self.gen_digits(lines_torque)
         digits_angal = self.gen_digits(lines_angal)
-        rf = Rainflow(series=digits_torque, parameters=[('angal', digits_angal)])
+        digits_c = self.gen_digits(lines_c)
+        rf = Rainflow(series=digits_torque, parameters=[('b', digits_angal),('c', digits_c)])
         #rf = Rainflow(series=digits_torque)
-        result = rf.count_cycles(ndigits=-1)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
+        result = rf.count_cycles(ndigits=0)  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
         return result
 
     def gen_csvfiles(self, paths):
         self.total_files = len(paths)
         for path in paths:
-            with open(file=path, newline='', encoding='gb18030') as f:
-                csv_file = csv.DictReader(f) # 每行作为一个字典，字典的键来自每个csv的第一行
+            with open(file=path, newline='', encoding='gb18030') as f:  # 根据文件编码调整encoding 
+                csv_file = csv.DictReader(f) # 读取每行作为一个字典，字典的键来自每个csv的第一行
                 yield csv_file
 
     def gen_lines(self, csv_files, header):
@@ -61,11 +64,17 @@ class TestSolver(BaseSolver):
 
     def solver_method(self):
         pass
-
 class VisualSolver(BaseSolver):
 
     def solver_method(self):
         pass
+
+
+class ToCsv(BaseSolver):
+
+    def solver_method(self):
+        pass
+
 
 SOLVERS = {
     '1': ('RainflowSolver', RainflowSolver),
