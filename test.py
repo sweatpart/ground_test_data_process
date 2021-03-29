@@ -1,15 +1,21 @@
-from src.solvers import RainflowSolver
+from src.solvers import RainflowSolver, DutyCycleSolver
 import json
 import csv
 
 def main():
-    path = ['/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/testinput.csv']
-    rf = RainflowSolver()
-    result = rf.solver_method(path)
-    print(result)
-    with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/test.json', 'w') as j:
-        json.dump(result, j)
 
+    test_file = '/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/testinput.csv'
+
+    config = {
+        'paths' : [test_file],
+        'main_parm' : 'torque',
+        'optional_parms' : ['speed', 'angal']
+    }
+
+    rf = RainflowSolver()
+    result = rf.solver_method(config)
+    print(result)
+    
 def tocsv():
     with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.json', 'r') as j:
         data = json.load(j)
@@ -22,5 +28,21 @@ def tocsv():
                 count['torque'] = str(torque)
                 writer.writerow(count) 
 
+def dutycycle():
+    test_file = '/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/testinput.csv'
+
+    config = {
+        'paths' : [test_file],
+        'main_parm' : 'torque',
+        'optional_parms' : ['speed', 'angal'],
+        'tire_radius' : 0.3,
+        'time_interval' : 0.05
+    }
+
+    dc = DutyCycleSolver()
+    result = dc.solver_method(config)
+    print(result)
+
 if __name__ == '__main__':
-    main()
+    #main()
+    dutycycle()

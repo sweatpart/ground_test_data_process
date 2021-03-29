@@ -48,8 +48,8 @@ class Processor(object):
     def _process(self, command=None):
 
         try:
-            parameters, solver = command
-            result = solver().solver_method(parameters)
+            config, solver = command
+            result = solver().solver_method(config=config)
             return result
         except ProcessorExit:
             self._terminated.set()
@@ -69,16 +69,21 @@ def main():
    
     result_q = Queue()
     worker = Processor()
+    
     worker.start(result_q)
+
     test_file = '/root/ground_test_data_process/tests/testinput.csv'
-    paths = [test_file]
-    worker.send((paths, RainflowSolver))
+
+    config = {
+        'paths' : [test_file],
+        'main_parm' : 'a',
+        'optional_parms' : ['b', 'c']
+    }
+
+    worker.send((config, RainflowSolver))
     #time.sleep(4)
     result= result_q.get()
     print(result)
-    with open('/root/ground_test_data_process/tests/test.json', 'w') as j:
-        json.dump(result, j)
-
 
 if __name__ == "__main__":
     main()

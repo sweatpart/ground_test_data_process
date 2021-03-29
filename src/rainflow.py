@@ -220,17 +220,18 @@ class Rainflow(object):
             round_ = _get_round_function(ndigits)
             if self.parameters:
                 for rng, count, parameters in cycles:
+                    rounded_rng = int(round_(rng))
                     print(rng)
-                    sub_dict = counts[round_(rng)]
+                    sub_dict = counts[rounded_rng]
                     while parameters:
                         if len(parameters) == 1:
-                            temp = parameters.pop()
+                            temp = int(parameters.pop())
                             if sub_dict[temp]:
                                 sub_dict[temp] += count
                             else:
                                 sub_dict[temp] = count
                         else:
-                            sub_dict = sub_dict[parameters.pop()]
+                            sub_dict = sub_dict[int(parameters.pop())]
                     print(counts)
             else:
                 for rng, count in cycles:
