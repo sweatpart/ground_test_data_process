@@ -243,6 +243,6 @@ class Rainflow(object):
         else:
             for rng, count in cycles:
                 counts[rng] += count
-        print(counts)
+        #print(counts)
         return counts
         #return sorted(counts.items())

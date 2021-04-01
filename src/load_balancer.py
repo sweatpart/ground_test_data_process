@@ -1,10 +1,8 @@
 # 用于调度processor
-
-
 from collections import deque
 
 # pylint: disable=wrong-import-position
-from src.roadmap_processor import Processor
+from src.processor import Processor
 # pylint: enable=wrong-import-position
 
 class LoadBalancer(object):

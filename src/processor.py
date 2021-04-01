@@ -45,14 +45,17 @@ class Processor(object):
     def send(self, paths):
         self._commands.append(paths)
 
+    def join(self):
+        self._terminated.wait()
+
     def _process(self, command=None):
 
         try:
-            config, solver = command
-            result = solver().solver_method(config=config)
+            paths, config, solver = command
+            result = solver().solver_method(paths=paths, config=config)
             return result
         except ProcessorExit:
-            self._terminated.set()
+            raise ProcessorExit()
 
     def run(self, result_q):
         while True:
@@ -63,27 +66,8 @@ class Processor(object):
 
             time.sleep(0.1)
 
-
-@timer
 def main():
-   
-    result_q = Queue()
-    worker = Processor()
-    
-    worker.start(result_q)
-
-    test_file = '/root/ground_test_data_process/tests/testinput.csv'
-
-    config = {
-        'paths' : [test_file],
-        'main_parm' : 'a',
-        'optional_parms' : ['b', 'c']
-    }
-
-    worker.send((config, RainflowSolver))
-    #time.sleep(4)
-    result= result_q.get()
-    print(result)
+    print('This module can only be imported.')
 
 if __name__ == "__main__":
     main()

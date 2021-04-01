@@ -2,7 +2,7 @@ from collections import deque
 from queue import Queue
 import os
 
-from src.roadmap_processor import Processor
+from src.processor import Processor
 from src.file_browser import BrowserContext, NormalMode
 from src.solver_selector import SelectorContext
 
