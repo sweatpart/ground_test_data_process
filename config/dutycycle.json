@@ -1,4 +1,6 @@
 {
-    "main_parm" : "torque",
-    "optional_parms": ["speed", "angal"]
+    "main_parm" : "Torque_RL[Nm]",
+    "optional_parms" : ["WhlGndVelLDrvnHSC1[km/h]", "JounceAngle_RL[deg]"],
+    "tire_radius" : 0.3,
+    "time_interval" : 0.05
 }

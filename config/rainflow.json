@@ -1,0 +1,5 @@
+{
+    "main_parm" : "torque",
+    "optional_parms" : ["speed", "angal"],
+    "ndigits" : 0
+}

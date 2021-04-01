@@ -80,6 +80,7 @@ class DutyCycleSolver(BaseSolver):
         processed_line = self.gen_processed_lines(lines=lines, main_parm=config['main_parm'], optional_parms=config['optional_parms'])
         dc = DutyCycle(series=processed_line, config=config)
         result = dc.count_cycles()
+        print(result)
         return result
 
     def gen_processed_lines(self, lines, main_parm, optional_parms):  

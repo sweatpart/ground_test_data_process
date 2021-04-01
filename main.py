@@ -1,20 +1,21 @@
 from collections import deque
 from queue import Queue
 import os
+import json
 
 from src.processor import Processor
 from src.file_browser import BrowserContext, NormalMode
 from src.solver_selector import SelectorContext
 
 def async_file_browser():
-    _ = yield
+    _messgae = yield
     while True:
         fb = BrowserContext(NormalMode)
         files_to_process = fb.run()
         yield files_to_process
 
 def async_solver_selector():
-    _ = yield
+    _messgae = yield
     while True:
         ss = SelectorContext()
         selected_solver = ss.run()
@@ -30,11 +31,12 @@ class MainContextExit(MainContextError):
 
 class Command(object):
     
-    def __init__(self, parameters, solver):
-        self.comand_info = (parameters, solver)
+    def __init__(self, files, config, solver):
+        self.comand_info = (files, config, solver)
 
     def sendto(self,load_balancer):
         load_balancer.send(self.comand_info)
+
 
 class MainContext(object):
 
@@ -76,19 +78,32 @@ class MainContext(object):
 
     def user_input_handler(self):
         user_input = self._message_box.popleft()
+
         if user_input == ':file':
-            self.files_to_process = self.file_browser.send('add')
+            self.files_to_process = self.file_browser.send('file')
+
+        elif user_input == ':config':
+            with open(self.file_browser.send('config')[0]) as j:
+                self.config = json.load(j)
+
         elif user_input == ':cancel':
             self.load_balancer.close()
+
         elif user_input == ':solver':
             self.solver = self.solver_selector.send('add')
+
         elif user_input == ':add':
-            self._command_list.append(Command(self.files_to_process, self.solver))
+            try:
+                self._command_list.append(Command(self.files_to_process, self.config, self.solver))
+            except:
+                self.error_information = 'Invalid command.'
+    
         elif user_input == ':start':
             if self._command_list:
                 self.load_balancer.start(self.result_q)
                 for command in self._command_list:
                     command.sendto(self.load_balancer)
+    
         elif user_input == ':quit':
             raise MainContextExit
 
@@ -99,6 +114,8 @@ class MainContext(object):
                 self.user_input_handler()
             except MainContextExit:
                 print('MainContext close successfully.')
+                break
+
 
 def main():
     load_balancer = Processor()
