@@ -39,17 +39,19 @@ class BaseMode(object):
 
     def draw_main(self):
         self.paths_in_dir = os.listdir(self.path_head)
+        if self.config['hide']:
+            self.paths_in_dir = [path for path in self.paths_in_dir if not path.startswith('.')]
+
         if self.config['number']:
             line_number = 0
         else:
             line_number = ''
+        
         for path in self.paths_in_dir:
-            if self.config['hide']:
-                if path.startswith('.'):
-                    continue
+            sys.stdout.write('{} {}\n'.format(line_number, path))
             if self.config['number']:
                 line_number += 1
-            sys.stdout.write('{} {}\n'.format(line_number, path))
+
         sys.stdout.write('\n')
         sys.stdout.flush()
 
@@ -147,7 +149,7 @@ class PathMode(BaseMode):
                 assert os.path.isdir(self.path_head + self.paths_in_dir[int(user_input)] + '/')
                 self.error_information = ''
                 self.path_head += self.paths_in_dir[int(user_input)] + '/'
-            
+
             except:    
                 self.error_information = '[Error: input is not a dir.]'
 
@@ -186,12 +188,21 @@ class FileMode(BaseMode):
             self.files_to_process.append(self.path_head + user_input)
 
         else:
-            try:
-                assert os.path.isfile(self.path_head + self.paths_in_dir[int(user_input)])
+            try:  
+                assert os.path.isfile(self.path_head + self.paths_in_dir[int(user_input)])  # 按序号添加文件
                 self.error_information = ''
-                self.path_head += self.paths_in_dir[int(user_input)]
+                self.files_to_process.append(self.path_head + self.paths_in_dir[int(user_input)])
             except:
-                self.error_information = '[Error: input is not a file.]'
+                try:  # 可以通过1-10这种形式批量选择文件，但需保证所有均为文件才可选中
+                    boundaries = user_input.split('-')
+                    for file_no in range(int(boundaries[0]), int(boundaries[1])+1):
+                        assert os.path.isfile(self.path_head + self.paths_in_dir[file_no])
+                        self.files_to_process.append(self.path_head + self.paths_in_dir[file_no])
+
+                    self.error_information = ''
+
+                except:
+                    self.error_information = '[Error: input is not a file.]'
 
         return self
             
