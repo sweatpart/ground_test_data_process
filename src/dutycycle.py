@@ -13,7 +13,7 @@ class DutyCycle():
 
         for line in self.series:
             count = float(line[self.speed]) * 1000 / 60 / (2 * 3.14 * self.tire_radius) * self.time_interval
-            yield [float(line[self.torque]), count, float(abs(line[self.angal]))]
+            yield [float(line[self.torque]), count, abs(float(line[self.angal]))]
         
     def count_cycles(self):
 
