@@ -25,6 +25,8 @@ class BaseMode(object):
         self.files_to_process = []
         self.input_prompt = ''
 
+        self.paths_in_dir = None
+
     def __repr__(self):
         return type(self).__name__
     
@@ -36,12 +38,12 @@ class BaseMode(object):
         print('Path: {}\n'.format(self.path_head))
 
     def draw_main(self):
-        paths_in_dir = os.listdir(self.path_head)
+        self.paths_in_dir = os.listdir(self.path_head)
         if self.config['number']:
             line_number = 0
         else:
             line_number = ''
-        for path in paths_in_dir:
+        for path in self.paths_in_dir:
             if self.config['hide']:
                 if path.startswith('.'):
                     continue
@@ -129,20 +131,25 @@ class PathMode(BaseMode):
             temp = self.path_head.split('/')
             temp.pop(-2)  # 删掉当前目录名
             self.path_head = '/'.join(temp)
+        
 
         elif os.path.isdir(self.path_head + user_input):
             self.error_information = ''
             self.path_head += user_input
-            if user_input.endswith('/'): 
-                pass
-            else: 
+            if not user_input.endswith('/'):  
                 self.path_head += '/'
 
         elif user_input.startswith(':'):
             self.error_information = '[Error: invalid command.]'
 
         else:
-            self.error_information = '[Error: input is not a dir.]'
+            try:
+                assert os.path.isdir(self.path_head + self.paths_in_dir[int(user_input)] + '/')
+                self.error_information = ''
+                self.path_head += self.paths_in_dir[int(user_input)] + '/'
+            
+            except:    
+                self.error_information = '[Error: input is not a dir.]'
 
         return self
 
@@ -179,7 +186,12 @@ class FileMode(BaseMode):
             self.files_to_process.append(self.path_head + user_input)
 
         else:
-            self.error_information = '[Error: input is not a file.]'
+            try:
+                assert os.path.isfile(self.path_head + self.paths_in_dir[int(user_input)])
+                self.error_information = ''
+                self.path_head += self.paths_in_dir[int(user_input)]
+            except:
+                self.error_information = '[Error: input is not a file.]'
 
         return self
             
@@ -187,7 +199,7 @@ class FileMode(BaseMode):
 class BrowserContext(object):
 
     def __init__(self, init_state):
-        path = '/Users/sunlei/Documents/Github/ground_test_data_process/tests/'
+        path = os.getcwd() + '/'
         config = {
             'number': 1,  # 显示行号
             'hide': 1  # 显示隐藏文件
