@@ -4,7 +4,7 @@ import json
 #导入具体算法模型
 from src.rainflow import Rainflow
 from src.dutycycle import DutyCycle
-from src.db import get_db
+from src.db import insert_db
 
 class BaseSolver(object):
 
@@ -41,17 +41,6 @@ class BaseSolver(object):
         """
         pass
 
-    def insert_db(self, result):
-        db = get_db()
-        record = {
-            'user_id': 'sl',
-            'project': 'test',
-            'solver': self.__class__.__name__,
-            'result': json.dumps(result) 
-        }
-        db['test'].insert_one(record)
-
-
 class RainflowSolver(BaseSolver):
 
     def solver_method(self, paths, config):
@@ -74,7 +63,7 @@ class RainflowSolver(BaseSolver):
         rf = Rainflow(series=digits_main, parameters=parameters)
 
         result = rf.count_cycles(ndigits=config['ndigits'])  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
-        self.insert_db(result)
+        insert_db(user_id='sl', project='test', result=result)
         return result
     
     def gen_processed_lines(self, lines, header):
@@ -94,7 +83,7 @@ class DutyCycleSolver(BaseSolver):
         dc = DutyCycle(series=processed_line, config=config)
         result = dc.count_cycles()
         #print(result)
-        self.insert_db(result)
+        insert_db(user_id='sl', project='test', result=result)
         return result
 
     def gen_processed_lines(self, lines, main_parm, optional_parms):  

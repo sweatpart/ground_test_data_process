@@ -13,29 +13,36 @@ class BrowserExit(FileError):
 class FilesSelected(FileError):
     pass
 
+class PathSelected(FileError):
+    pass
+
 # TODO 太多重复代码，是否有方案优化
 class BaseMode(object):
 
     def __init__(self, path, config):
+        self.title = ''
+        self.input_prompt = ''
+        self.error_information = ''
+        self.info_prompt = ''
+        self.info = ''
+
         self.path_head = path
         self.config = config
 
         self._message_box = deque()
-        self.error_information = ''
-        self.files_to_process = []
-        self.input_prompt = ''
-
-        self.paths_in_dir = None
 
     def __repr__(self):
         return type(self).__name__
     
-    def draw_banner(self):
-        sys.stdout.write('{}  {}  {}  {}\n'.format('PathMode(:p)', 'FileMode(:f)', 'NormalMode(:n)', 'Quit(:q)'))
-        sys.stdout.flush()
+    def draw_title(self):
+        sys.stdout.write('{}\n'.format(self.title))
+        sys.stdout.write('-'*50 + '\n')
 
-    def draw_pwd(self):
-        print('Path: {}\n'.format(self.path_head))
+    def draw_toolbar(self):
+        sys.stdout.write('{}  {}  {}  {}\n'.format('PathMode(:p)', 'FileMode(:f)', 'NormalMode(:n)', 'Quit(:q)'))
+
+    def draw_info(self):
+        sys.stdout.write('{}: {}\n'.format(self.info_prompt, self.info))
 
     def draw_main(self):
         self.paths_in_dir = os.listdir(self.path_head)
@@ -47,16 +54,17 @@ class BaseMode(object):
         else:
             line_number = ''
         
+        sys.stdout.write('\n')
+
         for path in self.paths_in_dir:
             sys.stdout.write('{} {}\n'.format(line_number, path))
             if self.config['number']:
                 line_number += 1
 
         sys.stdout.write('\n')
-        sys.stdout.flush()
 
     def draw_status(self):
-        print('State: {}'.format(self))
+        sys.stdout.write('State: {}\n'.format(self))
     
     def draw_input(self):
         user_input = input('{}{}: '.format(self.error_information, self.input_prompt))
@@ -65,18 +73,24 @@ class BaseMode(object):
     def draw(self):
         os.system('clear')
 
-        self.draw_banner()
-        self.draw_pwd()
+        self.draw_title()
+        self.draw_toolbar()
+        self.draw_info()
         self.draw_main()
         self.draw_status()
         self.draw_input()
+        sys.stdout.flush()
 
 
 class NormalMode(BaseMode):
 
     def __init__(self, path, config):
         BaseMode.__init__(self, path, config)
-        self.input_prompt = 'User command: '
+
+        self.title = 'BROWSER'
+        self.input_prompt = 'User command'
+        self.info_prompt = 'Path'
+        self.info = self.path_head
     
     def user_input_handler(self):
         user_input = self._message_box.popleft()
@@ -112,7 +126,11 @@ class PathMode(BaseMode):
 
     def __init__(self, path, config):
         BaseMode.__init__(self, path, config)
-        self.input_prompt = 'Path to jump:'
+
+        self.title = 'BROWSER'
+        self.input_prompt = 'Path to jump'
+        self.info_prompt = 'Path'
+        self.info = self.path_head
 
     def user_input_handler(self):
         user_input = self._message_box.pop()
@@ -127,12 +145,16 @@ class PathMode(BaseMode):
 
         elif user_input == ':q':
             raise BrowserExit
+        
+        elif user_input == ':s':
+            raise PathSelected
 
         elif user_input == '..':
             self.error_information = ''
             temp = self.path_head.split('/')
             temp.pop(-2)  # 删掉当前目录名
             self.path_head = '/'.join(temp)
+            self.info = self.path_head
         
 
         elif os.path.isdir(self.path_head + user_input):
@@ -140,6 +162,8 @@ class PathMode(BaseMode):
             self.path_head += user_input
             if not user_input.endswith('/'):  
                 self.path_head += '/'
+
+            self.info = self.path_head
 
         elif user_input.startswith(':'):
             self.error_information = '[Error: invalid command.]'
@@ -149,6 +173,7 @@ class PathMode(BaseMode):
                 assert os.path.isdir(self.path_head + self.paths_in_dir[int(user_input)] + '/')
                 self.error_information = ''
                 self.path_head += self.paths_in_dir[int(user_input)] + '/'
+                self.info = self.path_head
 
             except:    
                 self.error_information = '[Error: input is not a dir.]'
@@ -160,7 +185,13 @@ class FileMode(BaseMode):
 
     def __init__(self, path, config):
         BaseMode.__init__(self, path, config)
-        self.input_prompt = 'File to select:'   
+
+        self.title = 'BROWSER'
+        self.input_prompt = 'File to select'
+        self.info_prompt = 'File selected'   
+
+        self.files_to_process = []
+        self.info = len(self.files_to_process)
 
     def user_input_handler(self):
         user_input = self._message_box.popleft()
@@ -192,6 +223,7 @@ class FileMode(BaseMode):
                 assert os.path.isfile(self.path_head + self.paths_in_dir[int(user_input)])  # 按序号添加文件
                 self.error_information = ''
                 self.files_to_process.append(self.path_head + self.paths_in_dir[int(user_input)])
+                self.info = len(self.files_to_process)
             except:
                 try:  # 可以通过1-10这种形式批量选择文件，但需保证所有均为文件才可选中
                     boundaries = user_input.split('-')
@@ -200,6 +232,7 @@ class FileMode(BaseMode):
                         self.files_to_process.append(self.path_head + self.paths_in_dir[file_no])
 
                     self.error_information = ''
+                    self.info = len(self.files_to_process)
 
                 except:
                     self.error_information = '[Error: input is not a file.]'
@@ -209,7 +242,7 @@ class FileMode(BaseMode):
 
 class BrowserContext(object):
 
-    def __init__(self, init_state):
+    def __init__(self, init_state=PathMode):
         path = os.getcwd() + '/'
         config = {
             'number': 1,  # 显示行号
@@ -234,12 +267,16 @@ class BrowserContext(object):
             except FilesSelected:
                 print('Files selected successfully.')
                 return self._state.files_to_process
+            except PathSelected:
+                print('Path selected successfully.')
+                return self._state.path_head
+
             else:
                 pass
 
 
 def main():
-    test_fileexplorer = BrowserContext(PathMode)
+    test_fileexplorer = BrowserContext()
     files_to_process = test_fileexplorer.run()
     print(files_to_process)
            
