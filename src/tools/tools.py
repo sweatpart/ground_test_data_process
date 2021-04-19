@@ -11,7 +11,7 @@ def timer(func):
         print('Running time of function {} is {}s'.format(func.__name__, (t1-t0)))
     return wapper
 
-def time_bar(self, num=None, max_num=40, shape='█'):
+def time_bar(num=None, max_num=40, shape='█'):
     """A timebar show the progress. Mostly used for excel importing by far."""
     rate = float(num) / float(max_num)
     rate_percent = int(rate * 100)   

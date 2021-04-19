@@ -1,5 +1,6 @@
 import pymongo
 import json
+import csv
 
 def get_db():
     client = pymongo.MongoClient()
@@ -20,7 +21,23 @@ def query_db(parm=None, value=None):
     db = get_db()
     collection = db['test']
     if parm and value:
-        result = collection.find({parm: value})
+        matches = collection.find({parm: value})
     else:
-        result = collection.find()
-    return result
+        matches = collection.find()
+    return matches
+
+def extract_result(match):
+    return json.loads(match['result'])  #返回字典形式的计算结果
+
+def result2csv(result, save_path):
+    with open(save_path, 'w', newline='') as csvfile:
+        fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for torque, count in result:
+            count['torque'] = str(torque)
+            writer.writerow(count)
+
+    return True
+
