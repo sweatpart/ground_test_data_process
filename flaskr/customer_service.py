@@ -11,7 +11,11 @@ bp = Blueprint('customer_service', __name__)
 @bp.route('/', methods=['GET',])
 def index():
     pass
-    
+
+@bp.route('/test')
+def test():
+    return render_template('base.html')
+
 @bp.route('/submit', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
@@ -41,7 +45,7 @@ def submit():
 
         return redirect(url_for('customer_service.receipt', name=name, date=date, time=time))
 
-    return render_template('customer/checkout.html')
+    return render_template('customer/solver.html')
 
 @bp.route('/receipt/<name>&<date>&<time>', methods=['GET',])
 def receipt(name, date, time):

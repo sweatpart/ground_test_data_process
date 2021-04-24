@@ -1,4 +1,4 @@
-from src.tools.interface import Interface
+from cliui.interface import Interface
 from src.db import query_db
 from cliui.file_browser import BrowserContext
 import sys
