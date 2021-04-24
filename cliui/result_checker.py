@@ -1,6 +1,6 @@
 from src.tools.interface import Interface
 from src.db import query_db
-from src.file_browser import BrowserContext
+from cliui.file_browser import BrowserContext
 import sys
 import json
 

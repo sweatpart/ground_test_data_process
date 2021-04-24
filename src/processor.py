@@ -8,7 +8,7 @@ import json
 
 
 from src.tools import timer
-from src.solvers import *
+from src.solvers import * 
 
 
 class Error(Exception):

@@ -4,8 +4,8 @@ import os
 import json
 
 from src.processor import Processor
-from src.file_browser import BrowserContext, NormalMode
-from src.solver_selector import SelectorContext
+from cliui.file_browser import BrowserContext, NormalMode
+from cliui.solver_selector import SelectorContext
 
 def async_file_browser():
     _messgae = yield
