@@ -1,26 +1,29 @@
 import pymongo
 import json
 import csv
+from bson.objectid import ObjectId
 
 def get_db():
-    client = pymongo.MongoClient()
+    client = pymongo.MongoClient('192.168.1.2', 27017)
     db = client['results']
     return db
 
-def insert_db(self, user_id, project, result):
-        db = get_db()
-        record = {
-            'user_id': user_id,
-            'project': project,
-            'solver': self.__class__.__name__,
-            'result': json.dumps(result) 
-        }
-        db['test'].insert_one(record)
+def insert_db(user_id, project, solver, result):
+    db = get_db()
+    record = {
+        'user_id': user_id,
+        'project': project,
+        'solver': solver,
+        'result': json.dumps(result) 
+    }
+    db['test'].insert_one(record)
 
 def query_db(parm=None, value=None):
     db = get_db()
     collection = db['test']
     if parm and value:
+        if parm == '_id':
+            value = ObjectId(value)
         matches = collection.find({parm: value})
     else:
         matches = collection.find()

@@ -63,7 +63,7 @@ class RainflowSolver(BaseSolver):
         rf = Rainflow(series=digits_main, parameters=parameters)
 
         result = rf.count_cycles(ndigits=config['ndigits'])  # ndigit参数控制雨流计数的精度，正代表小数点后几位。-2代表以100为分界计算。
-        insert_db(user_id='sl', project='test', result=result)
+        insert_db(user_id='sl', project='test', solver=self.__class__.__name__, result=result)
         return result
     
     def gen_processed_lines(self, lines, header):
@@ -83,7 +83,7 @@ class DutyCycleSolver(BaseSolver):
         dc = DutyCycle(series=processed_line, config=config)
         result = dc.count_cycles()
         #print(result)
-        insert_db(user_id='sl', project='test', result=result)
+        insert_db(user_id='sl', project='test', solver=self.__class__.__name__, result=result)
         return result
 
     def gen_processed_lines(self, lines, main_parm, optional_parms):  

@@ -1,3 +1,6 @@
+import csv
+from datetime import datetime
+from io import StringIO
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
@@ -5,6 +8,9 @@ from werkzeug.exceptions import abort
 
 from flaskr.auth import login_required
 from flaskr.db import get_db
+from werkzeug.wrappers import Response
+
+from src.db import query_db, extract_result
 
 bp = Blueprint('customer_service', __name__)
 
@@ -75,6 +81,75 @@ def update(date):
         result += '</select><div class="invalid-feedback">Please select a valid time.</div></div>'
                 
         return result
+
+
+
+# example data, this could come from wherever you are storing logs
+log = [
+    ('login', datetime(2015, 1, 10, 5, 30)),
+    ('deposit', datetime(2015, 1, 10, 5, 35)),
+    ('order', datetime(2015, 1, 10, 5, 50)),
+    ('withdraw', datetime(2015, 1, 10, 6, 10)),
+    ('logout', datetime(2015, 1, 10, 6, 15))
+]
+
+@bp.route('/download')
+def download_log():
+    def generate():
+        data = StringIO()
+        w = csv.writer(data)
+
+        # write header
+        w.writerow(('action', 'timestamp'))
+        yield data.getvalue()
+        data.seek(0)
+        data.truncate(0)
+
+        # write each log item
+        for item in log:
+            w.writerow((
+                item[0],
+                item[1].isoformat()  # format datetime as string
+            ))
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
+
+    # stream the response as the data is generated
+    response = Response(generate(), mimetype='text/csv')
+    # add a filename
+    response.headers.set("Content-Disposition", "attachment", filename="log.csv")
+    return response
+
+@bp.route('/download/<_id>')
+def download(_id):
+    def generate(result):
+        data = StringIO()
+
+        # write header
+        fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
+        w = csv.DictWriter(data, fieldnames=fieldnames)
+        w.writeheader()
+        yield data.getvalue()
+        data.seek(0)
+        data.truncate(0)
+
+        # write each log item
+        for torque, count in result.items():
+            count['torque'] = str(torque)
+            w.writerow(count)
+
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
+
+    for match in query_db(parm='_id', value=_id):
+        result = extract_result(match)
+    # stream the response as the data is generated
+    response = Response(generate(result), mimetype='text/csv')
+    # add a filename
+    response.headers.set("Content-Disposition", "attachment", filename="log.csv")
+    return response
 
 def get_client(phone):
     db = get_db()

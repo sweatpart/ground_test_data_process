@@ -4,7 +4,7 @@ import csv
 
 def rainflow():
 
-    test_file = '/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/testinput.csv'
+    test_file = '/root/github/ground_test_data_process/tests/testinput.csv'
     paths = [test_file]
     config = {
         'main_parm' : 'torque',
@@ -29,7 +29,7 @@ def tocsv():
                 writer.writerow(count) 
 
 def dutycycle():
-    test_file = '/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/1.csv'
+    test_file = '/root/github/ground_test_data_process/tests/1.csv'
     paths = [test_file]
     config = {
         'main_parm' : 'Torque_RL[Nm]',
@@ -43,5 +43,5 @@ def dutycycle():
     print(result)
 
 if __name__ == '__main__':
-    rainflow()
-    #dutycycle()
+    #rainflow()
+    dutycycle()
