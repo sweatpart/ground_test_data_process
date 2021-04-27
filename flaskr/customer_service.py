@@ -15,12 +15,23 @@ from src.db import query_db, extract_result
 bp = Blueprint('customer_service', __name__)
 
 @bp.route('/', methods=['GET',])
-def index():
-    pass
+@login_required
+def index_backup():
+    return redirect(url_for('customer_service.index'))
 
-@bp.route('/test')
+@bp.route('/test',  methods=['GET',])
 def test():
-    return render_template('base.html')
+    return render_template('customer/index.html')
+
+@bp.route('/index', methods=['GET',])
+@login_required
+def index():
+    if g.user['username'] == 'admin':
+        matches = query_db()
+    else:
+        matches = query_db(parm='username', value=g.user['username'])
+
+    return render_template('customer/index.html', matches=matches)
 
 @bp.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -127,7 +138,7 @@ def download(_id):
         data = StringIO()
 
         # write header
-        fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
+        fieldnames = ['torque'] + [str(angal) for angal in range(0,27)]
         w = csv.DictWriter(data, fieldnames=fieldnames)
         w.writeheader()
         yield data.getvalue()
@@ -148,7 +159,7 @@ def download(_id):
     # stream the response as the data is generated
     response = Response(generate(result), mimetype='text/csv')
     # add a filename
-    response.headers.set("Content-Disposition", "attachment", filename="log.csv")
+    response.headers.set("Content-Disposition", "attachment", filename=_id + ".csv")
     return response
 
 def get_client(phone):

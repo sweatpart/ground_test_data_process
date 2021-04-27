@@ -1,40 +1,47 @@
-from ..pipeline_torque_rainflow import Worker
-import unittest
+from src.solvers import RainflowSolver, DutyCycleSolver
+import json
+import csv
 
-class MyTestCase(unittest.TestCase):
+def rainflow():
 
-    def setUp(self):
-        self.test_worker = Worker()
-        self.assertEqual()
+    test_file = '/root/github/ground_test_data_process/tests/testinput.csv'
+    paths = [test_file]
+    config = {
+        'main_parm' : 'torque',
+        'optional_parms' : ['speed', 'angal'],
+        'ndigits' : 0
+    }
+
+    rf = RainflowSolver()
+    result = rf.solver_method(paths=paths, config=config)
+    print(result)
     
-    def test_method_1(self):
-        args = [1]
-        result = '1'
-        #self.assertEqual(self.test_worker.method(*args), result)
+def tocsv():
+    with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.json', 'r') as j:
+        data = json.load(j)
+        with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.csv', 'w', newline='') as csvfile:
+            fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-    def test_method_2(self):
-        args = [2]
-        result = '11'
-        #self.assertEqual(self.test_worker.method(*args), result)
+            writer.writeheader()
+            for torque, count in data:
+                count['torque'] = str(torque)
+                writer.writerow(count) 
 
-    def test_method_3(self):
-        args = [3]
-        result = '21'
-        #self.assertEqual(self.test_worker.method(*args), result)
+def dutycycle():
+    test_file = '/root/github/ground_test_data_process/tests/1.csv'
+    paths = [test_file]
+    config = {
+        'main_parm' : 'Torque_RL[Nm]',
+        'optional_parms' : ['WhlGndVelLDrvnHSC1[km/h]', 'JounceAngle_RL[deg]'],
+        'tire_radius' : 0.3,
+        'time_interval' : 0.05
+    }
 
-    def test_method_4(self):
-        args = [4]
-        result = '1211'
-        #self.assertEqual(self.test_worker.method(*args), result)
-
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(MyTestCase('test_method_1'))
-    suite.addTest(MyTestCase('test_method_2'))
-    suite.addTest(MyTestCase('test_method_3'))
-    suite.addTest(MyTestCase('test_method_4'))
-    return suite 
+    dc = DutyCycleSolver()
+    result = dc.solver_method(paths, config)
+    print(result)
 
 if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
+    #rainflow()
+    dutycycle()

@@ -4,14 +4,15 @@ import csv
 from bson.objectid import ObjectId
 
 def get_db():
-    client = pymongo.MongoClient('192.168.1.2', 27017)
+    #client = pymongo.MongoClient('192.168.1.2', 27017)
+    client = pymongo.MongoClient()
     db = client['results']
     return db
 
-def insert_db(user_id, project, solver, result):
+def insert_db(username, project, solver, result):
     db = get_db()
     record = {
-        'user_id': user_id,
+        'username': username,
         'project': project,
         'solver': solver,
         'result': json.dumps(result) 
