@@ -8,7 +8,8 @@ import json
 
 
 from src.tools import timer
-from src.solvers import * 
+from src.solvers import RainflowSolver, DutyCycleSolver 
+from src.db import insert_db
 
 
 class Error(Exception):
@@ -53,6 +54,7 @@ class Processor(object):
         try:
             paths, config, solver = command
             result = solver().solver_method(paths=paths, config=config)
+            insert_db(username='sl', project='test', solver=solver.__class__.__name__, result=result)
             return result
         except ProcessorExit:
             raise ProcessorExit()
