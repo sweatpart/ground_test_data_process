@@ -1,20 +1,24 @@
 from src.solvers import RainflowSolver, DutyCycleSolver
+from src.processor import Processor
 import json
 import csv
+import time
+from queue import Queue
 
 def rainflow():
 
-    test_file = '/root/github/ground_test_data_process/tests/testinput.csv'
+    test_file = '/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/1.csv'
     paths = [test_file]
     config = {
-        'main_parm' : 'torque',
-        'optional_parms' : ['speed', 'angal'],
-        'ndigits' : 0
+        'username': 'admin',
+        'project': 'test',
+        'main_parm': 'Torque_RL[Nm]',
+        'optional_parms': ['JounceAngle_RL[deg]'],
+        'ndigits': 0
     }
-
-    rf = RainflowSolver()
-    result = rf.solver_method(paths=paths, config=config)
-    print(result)
+    my_processor = Processor()
+    my_processor.start()
+    my_processor.send((paths, config, RainflowSolver))
     
 def tocsv():
     with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.json', 'r') as j:
@@ -43,5 +47,6 @@ def dutycycle():
     print(result)
 
 if __name__ == '__main__':
-    #rainflow()
-    dutycycle()
+    rainflow()
+    #dutycycle()
+    time.sleep(10)

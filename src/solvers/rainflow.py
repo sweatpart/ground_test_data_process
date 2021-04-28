@@ -232,7 +232,7 @@ class Rainflow(object):
                                 sub_dict[temp] = count
                         else:
                             sub_dict = sub_dict[int(parameters.pop())]
-                    print(counts)
+                    # print(counts) # 展示计算过程
             else:
                 for rng, count in cycles:
                     if counts[round_(rng)]:

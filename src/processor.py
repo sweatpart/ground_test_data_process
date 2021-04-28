@@ -25,15 +25,21 @@ class Processor(object):
     def __init__(self):
         self._commands = deque()
     
-    def start(self, result_q):
+    def start(self, result_q=None):
         self._terminated = Event()
-        t = Thread(target=self._bootstrap, args=(result_q,))  # 定义一个后台服务线程
+        if result_q is not None:
+            t = Thread(target=self._bootstrap, args=(result_q,))  # 定义一个后台服务线程
+        else:
+            t = Thread(target=self._bootstrap)
         t.daemon = True
         t.start()
     
-    def _bootstrap(self, result_q):
+    def _bootstrap(self, result_q=None):
         try:
-            self.run(result_q)
+            if result_q is not None:
+                self.run(result_q)
+            else:
+                self.run()
         except ProcessorExit:
             pass
         finally:
@@ -49,22 +55,23 @@ class Processor(object):
     def join(self):
         self._terminated.wait()
 
-    def _process(self, command=None):
+    def _process(self, command):
 
         try:
             paths, config, solver = command
             result = solver().solver_method(paths=paths, config=config)
-            insert_db(username='sl', project='test', solver=solver.__class__.__name__, result=result)
+            insert_db(username=config['username'], project=config['project'], solver=solver.__name__, result=result)
             return result
         except ProcessorExit:
             raise ProcessorExit()
 
-    def run(self, result_q):
+    def run(self, result_q=None):
         while True:
             if self._commands:
                 command = self._commands.popleft()
                 result = self._process(command)
-                result_q.put(result)
+                if result_q is not None:
+                    result_q.put(result)
 
             time.sleep(0.1)
 

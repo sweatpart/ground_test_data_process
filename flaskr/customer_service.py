@@ -12,6 +12,7 @@ from werkzeug.wrappers import Response
 
 from src.db import query_db, extract_result
 from src.solvers import SOLVERS
+from tests.test import rainflow
 
 bp = Blueprint('customer_service', __name__)
 
@@ -63,8 +64,8 @@ def update(date):
 @login_required
 def calrequest(solver):
     if request.method == 'POST':
-        pass
-    
+        rainflow()
+
     config_list = ['user_id', 'project'] + list(SOLVERS[solver][1]) + ['path_prefix']
     return render_template('customer/request.html', config_list=config_list)    
 
