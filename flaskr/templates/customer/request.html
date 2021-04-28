@@ -13,7 +13,7 @@
     
 
     <!-- Bootstrap core CSS -->
-<link href="{{ url_for('static', filename='assets/dist/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='assets/dist/css/bootstrap.min.css') }}" rel="stylesheet">
 
     <style>
       .bd-placeholder-img {
@@ -40,51 +40,56 @@
   </head>
   <body class="bg-light">
     
-<div class="container">
-  <main>
-    <div class="py-5 text-center">
-      <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='assets/brand/bootstrap-logo.svg') }}" alt="" width="72" height="57">
-      <h2>Checkout form</h2>
-      <p class="lead">Below is an example form built entirely with Bootstrap’s form controls. Each required form group has a validation state that can be triggered by attempting to submit the form without completing it.</p>
-    </div>
+    <div class="container">
+      <main>
+        <div class="py-5 text-center">
+          <!-- <img class="d-block mx-auto mb-4" src="{{ url_for('static', filename='assets/brand/SAIC_Motor_logo.png') }}" alt="" width="200" height="224"> -->
+          <h2>Calculation Request</h2>
+          <p class="lead">Fill the form below.</p>
+        </div>
 
-    <div class="row g-3">
-      <div class="row g-3">
-        <h4 class="mb-3">Client information</h4>
-        <form class="needs-validation" novalidate method="POST">
+        <div class="row g-3">
           <div class="row g-3">
-            {% for config in config_list %}
-            <div class="col-12">
-              <label for="name" class="form-label">{{ config }}</label>
-              <input name="{{ config }}" type="text" class="form-control" id="{{ config }}" placeholder="" value="" required>
-              <div class="invalid-feedback">
-                Valid {{ config }} is required.
+            <h4 class="mb-3">Config</h4>
+            <form class="needs-validation" novalidate method="POST">
+              <div class="row g-3">
+                {% for config in config_list %}
+                <div class="col-12">
+                  <div class="form-floating mb-3">
+                    <input name="{{ config }}" type="email" class="form-control" id="floatingInput" placeholder="#" required>
+                    <label for="floatingInput">{{ config }}</label>
+                  </div>
+                  <!-- <label for="name" class="form-label">{{ config }}</label>
+                  <input name="{{ config }}" type="text" class="form-control" id="{{ config }}" placeholder="" value="" required> -->
+                  <div class="invalid-feedback">
+                    Valid {{ config }} is required.
+                  </div>
+                </div>
+                {% endfor %}
               </div>
-            </div>
-            {% endfor %}
+              <hr class="my-4">
+              <div class="d-grid gap-2">
+                <a href="{{ url_for('customer_service.index') }}" class="btn btn-secondary btn-lg" type="cancel">Cancel</a>
+                <button class="btn btn-primary btn-lg" type="submit">Submit</button>
+              </div>
+            </form>
           </div>
+        </div>
+      </main>
 
-          <hr class="my-4">
-          <a href="{{ url_for('customer_service.index') }}" class="w-100 btn btn-primary btn-lg" type="cancel">Cancel</a>
-          <button class="w-100 btn btn-primary btn-lg" type="submit">Submit</button>
-        </form>
-      </div>
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; 2017–2021 SAIC</p>
+        <ul class="list-inline">
+          <li class="list-inline-item"><a href="#">Privacy</a></li>
+          <li class="list-inline-item"><a href="#">Terms</a></li>
+          <li class="list-inline-item"><a href="#">Support</a></li>
+        </ul>
+      </footer>
     </div>
-  </main>
-
-  <footer class="my-5 pt-5 text-muted text-center text-small">
-    <p class="mb-1">&copy; 2017–2021 Candy shop</p>
-    <ul class="list-inline">
-      <li class="list-inline-item"><a href="#">Privacy</a></li>
-      <li class="list-inline-item"><a href="#">Terms</a></li>
-      <li class="list-inline-item"><a href="#">Support</a></li>
-    </ul>
-  </footer>
-</div>
 
 
     <script src="{{ url_for('static', filename='assets/dist/js/bootstrap.bundle.min.js') }}"></script>
 
-      <script src="{{ url_for('static', filename='form-validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/dist/js/form-validation.js') }}"></script>
   </body>
 </html>

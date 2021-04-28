@@ -31,42 +31,14 @@ def index():
 
     return render_template('customer/index.html', solvers=SOLVERS.keys(), matches=matches)
 
-@bp.route('/receipt/<name>&<date>&<time>', methods=['GET',])
-def receipt(name, date, time):
-    return render_template('customer/receipt.html', name=name, date=date, time=time)
-
-@bp.route('/update/<date>', methods=['GET','POST'])
-def update(date):
-    if request.method == 'POST':
-        available_time = [str(i) + ':00' + '~' + str(i+1) + ':00' for i in range(8, 17)]
-        available_time = set(available_time)
-
-        db = get_db()
-        reserved_time = db.execute(
-            'SELECT time FROM reservation WHERE date = ?', (date,)
-        ).fetchall()
-
-        if reserved_time:
-            for time in reserved_time:
-                if time[0] in available_time:
-                    available_time.remove(time[0])
-        available_time = list(available_time)
-        available_time.sort()
-
-        result = '<div class="col-md-6"><label for="time" class="form-label">Time</label><select name="time" class="form-select" id="time" required><option value="">Choose...</option>'
-        for time in available_time:
-            result += '<option>{}</option>'.format(time)
-        result += '</select><div class="invalid-feedback">Please select a valid time.</div></div>'
-                
-        return result
-
 @bp.route('/request/<solver>', methods=['GET', 'POST'])
 @login_required
 def calrequest(solver):
     if request.method == 'POST':
         rainflow()
+        # TODO 添加表单处理逻辑
 
-    config_list = ['user_id', 'project'] + list(SOLVERS[solver][1]) + ['path_prefix']
+    config_list = ['username', 'project', 'description'] + list(SOLVERS[solver][1]) + ['path_prefix']
     return render_template('customer/request.html', config_list=config_list)    
 
 # example data, this could come from wherever you are storing logs
@@ -137,13 +109,3 @@ def download(_id):
     # add a filename
     response.headers.set("Content-Disposition", "attachment", filename=_id + ".csv")
     return response
-
-
-
-def get_client(phone):
-    db = get_db()
-    client_record = db.execute(
-            'SELECT id, name FROM client WHERE phone = ?', (phone,)
-    ).fetchone()
-
-    return client_record

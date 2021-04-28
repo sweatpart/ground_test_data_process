@@ -6,14 +6,14 @@
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.82.0">
-    <title>Offcanvas navbar template · Bootstrap v5.0</title>
+    <title>SAIC DATA PLATFORM</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/offcanvas-navbar/">
 
     
 
     <!-- Bootstrap core CSS -->
-<link href="{{ url_for('static', filename='assets/dist/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='assets/dist/css/bootstrap.min.css') }}" rel="stylesheet">
 
     <style>
       .bd-placeholder-img {
@@ -34,134 +34,128 @@
     
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='assets/dist/css/offcanvas.css') }}" rel="stylesheet">
+
   </head>
   <body class="bg-light">
     
-<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
-  <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
+      <div class="container-fluid">
+        
+        <a class="navbar-brand" href="#">SAIC DATA PlATFORM</a>
+        <button class="navbar-toggler p-0 border-0" type="button" data-bs-toggle="offcanvas" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="ms-auto navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Add New Task 
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="margin: 0px;">
+                <li><h6 class="dropdown-header">Solvers</h6></li>
+                {% for solver in solvers %}
+                <li><a class="dropdown-item" href="{{ url_for('customer_service.calrequest', solver=solver) }}">{{ solver }}</a></li>
+                {% endfor %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">TBD</a></li>
+              </ul>
+            </div>
+          </ul>
+
+          <ul class="navbar-nav mb-2 mb-lg-0 me-2">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Login user: {{ g.user['username'] }}</a>
+            </li>
+          </ul>
+
+          <a href="{{ url_for('auth.logout')}}" class="btn btn-outline-danger" type="submit">Sign out</a>
+        </div>
+      </div>   
+    </nav>
+
+    <main class="container">
+    <!--   <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
+        <img class="me-3" src="{{ url_for('static', filename='assets/brand/SAIC_Motor_logo.png') }}" alt="" width="60" height="67">
+        <div class="lh-1">
+          <h1 class="h6 mb-0 text-white lh-1">Bootstrap</h1>
+          <small>Since 2011</small>
+        </div>
+      </div> -->
+
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <h6 class="border-bottom pb-2 mb-0">Requests</h6>
+        <!-- content -->
+        <div class="d-flex text-muted pt-3">
+          <div class="spinner-border text-primary me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
     
-    <a class="navbar-brand" href="#">SAIC ROADMAP PLATFORM</a>
-    <button class="navbar-toggler p-0 border-0" type="button" data-bs-toggle="offcanvas" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="ms-auto navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-      <ul class="navbar-nav me-auto mb-2 mb-md-0">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="dropdown03" data-bs-toggle="dropdown" aria-expanded="false">Dropdown</a>
-          <ul class="dropdown-menu" aria-labelledby="dropdown03">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Add New Task</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-        </li>
-        <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-            Add New Task 
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="margin: 0px;">
-            <li><h6 class="dropdown-header">Dropdown header</h6></li>
-            {% for solver in solvers %}
-            <li><a class="dropdown-item" href="{{ url_for('customer_service.calrequest', solver=solver) }}">{{ solver }}</a></li>
-            {% endfor %}
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Separated link</a></li>
-          </ul>
+          <p class="pb-3 mb-0 small lh-sm border-bottom">
+            <strong class="d-block text-gray-dark">admin</strong>
+            1 mission in prgress.
+          </p>
         </div>
-      </ul>
+      </div>
 
-      <ul class="navbar-nav mb-2 mb-lg-0 me-2">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Login user: {{ g.user['username'] }}</a>
-        </li>
-      </ul>
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <h6 class="border-bottom pb-2 mb-0">Results</h6>
+      {% for match in matches %}
+        <div class="d-flex text-muted pt-3">
 
-      <a href="{{ url_for('auth.logout')}}" class="btn btn-outline-success" type="submit">Logoff</a>
-    </div>
-  </div>   
-</nav>
-
-<main class="container">
-<!--   <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
-    <img class="me-3" src="{{ url_for('static', filename='assets/brand/SAIC_Motor_logo.png') }}" alt="" width="60" height="67">
-    <div class="lh-1">
-      <h1 class="h6 mb-0 text-white lh-1">Bootstrap</h1>
-      <small>Since 2011</small>
-    </div>
-  </div> -->
-
-  <div class="my-3 p-3 bg-body rounded shadow-sm">
-    <h6 class="border-bottom pb-2 mb-0">Recent updates</h6>
-    <!-- content -->
-    <div class="d-flex text-muted pt-3">
-      <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
- 
-      <p class="pb-3 mb-0 small lh-sm border-bottom">
-        <strong class="d-block text-gray-dark">@username</strong>
-        Some representative placeholder content, with some information about this user. Imagine this being some sort of status update, perhaps?
-      </p>
-    </div>
-    <small class="d-block text-end mt-3">
-      <a href="#">All updates</a>
-    </small>
-  </div>
-
-  <div class="my-3 p-3 bg-body rounded shadow-sm">
-    <h6 class="border-bottom pb-2 mb-0">Results</h6>
-  {% for match in matches %}
-    <div class="d-flex text-muted pt-3">
-      <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-      
-      <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
-        <div class="d-flex justify-content-between">
-          <strong class="text-gray-dark">Full Name</strong>
-          <a href="{{ url_for('customer_service.download', _id=match['_id']) }}" download="log">Download</a>
+          <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
+          
+          <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
+            <div class="d-flex justify-content-between">
+              <strong class="text-gray-dark">{{ match['username'] }}</strong>
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-circle" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z"></path>
+                </svg>
+                <a href="{{ url_for('customer_service.download', _id=match['_id']) }}" class="text-decoration-none" download="log">Download</a>
+              </div>
+            </div>
+            <span name="id" class="d-block">@id</span>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">_id</th>
+                  <th scope="col">project</th>
+                  <th scope="col">solver</th>
+                  <th scope="col">discription</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ match['_id'] }}</td>
+                  <td>{{ match['project'] }}</td>
+                  <td>{{ match['solver'] }}</td>
+                  <td>XXX</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>  
         </div>
-        <span name="id" class="d-block">@id</span>
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">_id</th>
-              <th scope="col">username</th>
-              <th scope="col">project</th>
-              <th scope="col">solver</th>
-              <th scope="col">discription</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">1</th>
-              <td>{{ match['_id'] }}</td>
-              <td>{{ match['username'] }}</td>
-              <td>{{ match['project'] }}</td>
-              <td>{{ match['solver'] }}</td>
-              <td>XXX</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>  
-    </div>
-  {% endfor %}
+      {% endfor %}
 
-    <small class="d-block text-end mt-3">
-      <a href="#">All suggestions</a>
-    </small>
-  </div>
-</main>
+        <small class="d-block text-end mt-3">
+          <a href="#">More</a>
+        </small>
+      </div>
+    </main>
 
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2017–2021 SAIC</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="#">Privacy</a></li>
+        <li class="list-inline-item"><a href="#">Terms</a></li>
+        <li class="list-inline-item"><a href="#">Support</a></li>
+      </ul>
+    </footer>
 
+    <!-- js here -->
     <script src="{{ url_for('static', filename='assets/dist/js/bootstrap.bundle.min.js') }}"></script>
-
     <script src="{{ url_for('static', filename='assets/dist/js/offcanvas.js') }}"></script>
+
   </body>
 </html>
