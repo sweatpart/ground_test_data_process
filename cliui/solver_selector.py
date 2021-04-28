@@ -20,6 +20,11 @@ class Selector(object):
         self.selected_solver = ''
         self.error_information = ''
         self.input_prompt = 'Select solver No. '
+        number = 1
+        self.solver_dict = dict()
+        for solver_name in SOLVERS.keys(): 
+            self.solver_dict[str(number)] = solver_name 
+            number += 1
 
     def __repr__(self):
         return type(self).__name__
@@ -36,10 +41,8 @@ class Selector(object):
         print('Selected solver: {}\n'.format(status))
 
     def draw_main(self):
-        number = 1
-        for solver_name, _ in SOLVERS.values():
+        for number, solver_name in self.solver_dict.items():
             sys.stdout.write('{}. {}\n'.format(number, solver_name))
-            number += 1
         sys.stdout.write('\n')
         sys.stdout.flush()
 
@@ -65,9 +68,9 @@ class Selector(object):
                 raise SoverSelected
             else:
                 self.error_information = '[Error: No solver selected.]'
-        elif user_input in SOLVERS:
+        elif user_input in self.solver_dict.keys():
             self.error_information = ''
-            self.selected_solver = SOLVERS[user_input][1]  # 直接返回solver类
+            self.selected_solver = SOLVERS[self.solver_dict[user_input]][0]  # 直接返回solver类
         else:
             self.error_information = '[Error: not valid ]'
         

@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 from io import StringIO
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for,
 )
 from werkzeug.exceptions import abort
 
@@ -11,6 +11,7 @@ from flaskr.db import get_db
 from werkzeug.wrappers import Response
 
 from src.db import query_db, extract_result
+from src.solvers import SOLVERS
 
 bp = Blueprint('customer_service', __name__)
 
@@ -18,10 +19,6 @@ bp = Blueprint('customer_service', __name__)
 @login_required
 def index_backup():
     return redirect(url_for('customer_service.index'))
-
-@bp.route('/test',  methods=['GET',])
-def test():
-    return render_template('customer/index.html')
 
 @bp.route('/index', methods=['GET',])
 @login_required
@@ -31,38 +28,7 @@ def index():
     else:
         matches = query_db(parm='username', value=g.user['username'])
 
-    return render_template('customer/index.html', matches=matches)
-
-@bp.route('/submit', methods=['GET', 'POST'])
-def submit():
-    if request.method == 'POST':
-
-        name = request.form['name']
-        phone = request.form['phone']
-        service = request.form['service']
-        date = request.form['date']
-        time = request.form['time']
-         
-        db = get_db()
-        client_record = get_client(phone)
-            
-        if client_record is None:
-            db.execute(
-                'INSERT INTO client (name, phone) VALUES (?, ?)', (name, phone)
-            )
-            db.commit()
-            client_record = get_client(phone)
-            
-        reservation_info = (client_record['id'], service, date, time)
-
-        db.execute(
-            'INSERT INTO reservation (uid, service, date, time) VALUES (?, ?, ?, ?)', reservation_info
-        )
-        db.commit()
-
-        return redirect(url_for('customer_service.receipt', name=name, date=date, time=time))
-
-    return render_template('customer/solver.html')
+    return render_template('customer/index.html', solvers=SOLVERS.keys(), matches=matches)
 
 @bp.route('/receipt/<name>&<date>&<time>', methods=['GET',])
 def receipt(name, date, time):
@@ -93,7 +59,14 @@ def update(date):
                 
         return result
 
-
+@bp.route('/request/<solver>', methods=['GET', 'POST'])
+@login_required
+def calrequest(solver):
+    if request.method == 'POST':
+        pass
+    
+    config_list = ['user_id', 'project'] + list(SOLVERS[solver][1]) + ['path_prefix']
+    return render_template('customer/request.html', config_list=config_list)    
 
 # example data, this could come from wherever you are storing logs
 log = [
@@ -105,6 +78,7 @@ log = [
 ]
 
 @bp.route('/download')
+@login_required
 def download_log():
     def generate():
         data = StringIO()
@@ -133,6 +107,7 @@ def download_log():
     return response
 
 @bp.route('/download/<_id>')
+@login_required
 def download(_id):
     def generate(result):
         data = StringIO()
@@ -161,6 +136,8 @@ def download(_id):
     # add a filename
     response.headers.set("Content-Disposition", "attachment", filename=_id + ".csv")
     return response
+
+
 
 def get_client(phone):
     db = get_db()

@@ -109,8 +109,8 @@ class ToCsv(BaseSolver):
 
 
 SOLVERS = {
-    '1': ('RainflowSolver', RainflowSolver),
-    '2': ('DutyCycleSolver', DutyCycleSolver)
+    'RainflowSolver': (RainflowSolver, ('main_parm', 'optional_parms', 'ndigits')),
+    'DutyCycleSolver': (DutyCycleSolver, ('main_parm', 'optional_parms', 'tire_radius', 'time_interval'))
 }
 
 def main():

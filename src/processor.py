@@ -43,8 +43,8 @@ class Processor(object):
     def close(self):
         self.send(ProcessorExit)
     
-    def send(self, paths):
-        self._commands.append(paths)
+    def send(self, command):
+        self._commands.append(command)
 
     def join(self):
         self._terminated.wait()

@@ -58,4 +58,5 @@ def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(add_admin_command)
 
-
+# TOFIX
+# 增加mongodb启动检查

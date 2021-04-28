@@ -37,9 +37,6 @@ def create_app(test_config=None):
 
     from . import customer_service
     app.register_blueprint(customer_service.bp)
-
-    from . import dashboard
-    app.register_blueprint(dashboard.bp)
     
     app.add_url_rule('/', endpoint='submit')
 
