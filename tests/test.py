@@ -19,18 +19,6 @@ def rainflow():
     my_processor = Processor()
     my_processor.start()
     my_processor.send((paths, config, RainflowSolver))
-    
-def tocsv():
-    with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.json', 'r') as j:
-        data = json.load(j)
-        with open('/Users/sunlei/Documents/GitHub/ground_test_data_process/tests/abs/6.csv', 'w', newline='') as csvfile:
-            fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-            writer.writeheader()
-            for torque, count in data:
-                count['torque'] = str(torque)
-                writer.writerow(count) 
 
 def dutycycle():
     test_file = '/root/github/ground_test_data_process/tests/1.csv'

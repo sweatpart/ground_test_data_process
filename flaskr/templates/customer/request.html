@@ -33,10 +33,10 @@
 
     
     <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='form-validation.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='assets/dist/css/form-validation.css') }}" rel="stylesheet">
 
     <!--js here-->
-    <script src="{{ url_for('static', filename='askServer.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/dist/js/askServer.js') }}"></script>
   </head>
   <body class="bg-light">
     
@@ -56,14 +56,14 @@
                 {% for config in config_list %}
                 <div class="col-12">
                   <div class="form-floating mb-3">
-                    <input name="{{ config }}" type="email" class="form-control" id="floatingInput" placeholder="#" required>
+                    <input name="{{ config }}" class="form-control" id="floatingInput" placeholder="#" required>
                     <label for="floatingInput">{{ config }}</label>
+                    <div class="invalid-feedback">
+                      Valid {{ config }} is required.
+                    </div>
                   </div>
                   <!-- <label for="name" class="form-label">{{ config }}</label>
                   <input name="{{ config }}" type="text" class="form-control" id="{{ config }}" placeholder="" value="" required> -->
-                  <div class="invalid-feedback">
-                    Valid {{ config }} is required.
-                  </div>
                 </div>
                 {% endfor %}
               </div>
