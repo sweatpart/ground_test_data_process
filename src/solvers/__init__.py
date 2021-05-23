@@ -4,15 +4,11 @@ import json
 #导入具体算法模型
 from src.solvers.rainflow import Rainflow
 from src.solvers.dutycycle import DutyCycle
-from src.db import insert_db
 
 class BaseSolver(object):
 
-    def __init__(self):
-        """
-            抽象类方法，子类具体实现
-        """
-        pass
+    def __init__(self, progress_rate):
+        self.progress_rate = progress_rate
 
     def __repr__(self):
         return type(self).__name__
@@ -24,11 +20,15 @@ class BaseSolver(object):
         pass
 
     def gen_csvfiles(self, paths):
-        self.total_files = len(paths)
+        total_files = len(paths)
+        processed_files = 0
+
         for path in paths:
             with open(file=path, newline='', encoding='gb18030') as f:  # 根据文件编码调整encoding 
                 csv_file = csv.DictReader(f) # 读取每行作为一个字典，字典的键来自每个csv的第一行
                 yield csv_file
+                processed_files += 1
+                self.progress_rate.put((processed_files, total_files))
 
     def gen_lines(self, csv_files):
         for csv_file in csv_files:
@@ -81,7 +81,6 @@ class DutyCycleSolver(BaseSolver):
         processed_line = self.gen_processed_lines(lines=lines, main_parm=config['main_parm'], optional_parms=config['optional_parms'])
         dc = DutyCycle(series=processed_line, config=config)
         result = dc.count_cycles()
-        #print(result)
         return result
 
     def gen_processed_lines(self, lines, main_parm, optional_parms):  
