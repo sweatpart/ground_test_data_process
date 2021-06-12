@@ -35,11 +35,11 @@ def extract_result(match):
 
 def result2csv(result, save_path):
     with open(save_path, 'w', newline='') as csvfile:
-        fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]
+        fieldnames = ['torque'] + [str(angal) + '.0' for angal in range(0,27)]  #此处需要根据输入结果格式看怎么写
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
-        for torque, count in result:
+        for torque, count in result.items():
             count['torque'] = str(torque)
             writer.writerow(count)
 

@@ -12,7 +12,7 @@ class DutyCycle():
     def extract_cycles(self):
 
         for line in self.series:
-            count = float(line[self.speed]) * 1000 / 60 / (2 * 3.14 * self.tire_radius) * self.time_interval
+            count = float(line[self.speed]) * 1000 / 60 / (2 * 3.1415926 * self.tire_radius) * self.time_interval
             yield [float(line[self.torque]), count, abs(float(line[self.angal]))]
         
     def count_cycles(self):
@@ -25,17 +25,19 @@ class DutyCycle():
         
         result = defaultdict(dict)
 
-        roundtorque_ = _get_round_function(-1)
-        roundcount_ = _get_round_function(1)
-        roundangal_ = _get_round_function(0)
+        roundtorque_ = _get_round_function(-1)  # 保留十位
+        roundcount_ = _get_round_function(1)  # 保留小数点后一位
+        roundangal_ = _get_round_function(0)  # 保留个位
 
         cycles = self.extract_cycles()
-        round_cycles = ((roundtorque_(torque), roundcount_(count), roundangal_(angal)) for torque, count, angal in cycles)
+        round_cycles = ((roundtorque_(torque), count, roundangal_(angal)) for torque, count, angal in cycles)
         for torque, count, angal in round_cycles:
             try:
                 result[torque][angal] += count
             except KeyError:
                 result[torque][angal] = count
             #print(torque, count, angal)
-
+        for torque in result.keys():
+            for angal in result[torque].keys():
+                result[torque][angal] = roundcount_(result[torque][angal])
         return result

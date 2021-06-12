@@ -6,6 +6,7 @@ from queue import Queue
 from src.processor import Processor
 from src.solvers import DutyCycleSolver, RainflowSolver
 from src.tools import time_bar
+from src.db import result2csv
 
 def rainflow():
 
@@ -23,7 +24,9 @@ def rainflow():
     my_processor.send((paths, config, RainflowSolver))
 
 def dutycycle():
-    paths = ['/Users/sunlei/Downloads/2/csv/{}.csv'.format(i) for i in range(1, 10)]
+    result_q = Queue()
+    home_path = '/mnt/e/Documents/WORK/SAICMARVEL/csvfiles/'
+    paths = [home_path + '2/{}.csv'.format(i) for i in range(1, 881)]
     config = {
         'username': 'admin',
         'project': 'test',
@@ -34,7 +37,7 @@ def dutycycle():
     }
     # 启动计算子进程
     my_processor = Processor()
-    my_processor.start()
+    my_processor.start(result_q=result_q)
     my_processor.send((paths, config, DutyCycleSolver))
     # 计算时，主线程来到这里
     # TODO 未考虑多个slave传递进度的情况
@@ -44,7 +47,10 @@ def dutycycle():
             time_bar(rate=rate[0]/rate[1])
             if rate[0] == rate[1]:
                 break
-
+    if result_q:
+        result = result_q.get()
+    print(result)
+    result2csv(result=result, save_path='/mnt/e/Documents/WORK/SAICMARVEL/csvfiles/6.csv')
     my_processor.close()
     my_processor.join()
 
