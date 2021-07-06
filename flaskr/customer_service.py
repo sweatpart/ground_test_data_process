@@ -109,3 +109,23 @@ def download(_id):
     # add a filename
     response.headers.set("Content-Disposition", "attachment", filename=_id + ".csv")
     return response
+
+@bp.route('/charts/<_id>', methods=['GET',])
+@login_required
+def charts(_id):
+    for match in query_db(parm='_id', value=_id):
+        result = extract_result(match)
+    torques = []
+    temp = dict()
+    for torque, count in result.items():
+        torques.append(torque)
+        for angal, num in count.items():
+            if angal in temp.keys():
+                temp[angal].append(num)
+            else:
+                temp[angal] = []
+                temp[angal].append(num)
+    datas = []
+    for angal, count in temp.items():
+        datas.append({'name': angal, 'data': count})
+    return render_template('customer/charts.html', torques=torques, datas=datas) 
