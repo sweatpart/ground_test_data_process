@@ -34,8 +34,8 @@
         <!-- Custom styles for this template -->
         <link href="{{ url_for('static', filename='assets/dist/css/offcanvas.css') }}" rel="stylesheet">
         <title>示例图表</title>
-        <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script src="http://cdn.highcharts.com.cn/highcharts/9.1.2/highcharts.js"></script>
+        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="https://cdn.highcharts.com.cn/highcharts/9.1.2/highcharts.js"></script>
 
       </head>
        
@@ -68,14 +68,14 @@
                     yAxis: {
                         min: 0,
                         title: {
-                            text: '循环圈数 (r)'
+                            text: '循环圈数 (cycle)'
                         }
                     },
                     tooltip: {
                         // head + 每个 point + footer 拼接成完整的 table
                         headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                         pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+                        '<td style="padding:0"><b>{point.y:.1f} cycle</b></td></tr>',
                         footerFormat: '</table>',
                         shared: true,
                         useHTML: true
